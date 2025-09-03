@@ -2,7 +2,6 @@
 
 from __future__ import annotations
 
-import logging
 from pathlib import Path
 from typing import Any
 
@@ -11,7 +10,6 @@ from fastmcp import FastMCP
 # Local imports
 from .models import get_session_manager
 from .tools.data_operations import create_data_preview_with_indices
-from .utils.logging_config import get_logger, set_correlation_id, setup_structured_logging
 from .tools.mcp_analytics_tools import register_analytics_tools
 from .tools.mcp_data_tools import register_data_tools
 from .tools.mcp_history_tools import register_history_tools
@@ -21,6 +19,7 @@ from .tools.mcp_system_tools import register_system_tools
 from .tools.mcp_validation_tools import register_validation_tools
 from .tools.transformations import get_cell_value as _get_cell_value
 from .tools.transformations import get_row_data as _get_row_data
+from .utils.logging_config import get_logger, set_correlation_id, setup_structured_logging
 
 # Configure structured logging
 logger = get_logger(__name__)
@@ -215,7 +214,7 @@ def main() -> None:
 
     # Setup structured logging
     setup_structured_logging(args.log_level)
-    
+
     # Set server-level correlation ID
     server_correlation_id = set_correlation_id()
 

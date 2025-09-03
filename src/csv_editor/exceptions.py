@@ -48,7 +48,7 @@ class SessionExpiredError(SessionError):
         """Initialize with session ID."""
         super().__init__(
             f"Session '{session_id}' has expired",
-            error_code="SESSION_EXPIRED", 
+            error_code="SESSION_EXPIRED",
             details={"session_id": session_id},
         )
 

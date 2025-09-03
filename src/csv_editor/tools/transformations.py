@@ -15,9 +15,7 @@ FilterCondition = dict[str, str | CellValue]  # For filter condition dicts
 
 from ..exceptions import (
     ColumnNotFoundError,
-    DataError,
     InvalidParameterError,
-    InvalidRowIndexError,
     NoDataLoadedError,
     SessionNotFoundError,
 )
@@ -35,12 +33,12 @@ def _get_session_data(session_id: str) -> tuple[Any, pd.DataFrame]:
     """Get session and DataFrame, raising appropriate exceptions if not found."""
     manager = get_session_manager()
     session = manager.get_session(session_id)
-    
+
     if not session:
         raise SessionNotFoundError(session_id)
     if not session.data_session.has_data():
         raise NoDataLoadedError(session_id)
-        
+
     return session, session.data_session.df
 
 
@@ -106,7 +104,11 @@ async def filter_rows(
             elif operator == "not_null":
                 condition_mask = col_data.notna()
             else:
-                raise InvalidParameterError("operator", operator, "Valid operators: ==, !=, >, <, >=, <=, contains, starts_with, ends_with, in, not_in, is_null, not_null")
+                raise InvalidParameterError(
+                    "operator",
+                    operator,
+                    "Valid operators: ==, !=, >, <, >=, <=, contains, starts_with, ends_with, in, not_in, is_null, not_null",
+                )
 
             mask = mask & condition_mask if mode == "and" else mask | condition_mask
 
@@ -128,7 +130,12 @@ async def filter_rows(
             "rows_filtered": len(df) - len(session.data_session.df),
         }
 
-    except (SessionNotFoundError, NoDataLoadedError, ColumnNotFoundError, InvalidParameterError) as e:
+    except (
+        SessionNotFoundError,
+        NoDataLoadedError,
+        ColumnNotFoundError,
+        InvalidParameterError,
+    ) as e:
         logger.error(f"Filter operation failed: {e.message}")
         return {"success": False, "error": e.to_dict()}
     except (ValueError, TypeError) as e:
@@ -181,7 +188,9 @@ async def sort_data(
             if col not in df.columns:
                 return {"success": False, "error": f"Column '{col}' not found"}
 
-        session.data_session.df = df.sort_values(by=sort_columns, ascending=ascending).reset_index(drop=True)
+        session.data_session.df = df.sort_values(by=sort_columns, ascending=ascending).reset_index(
+            drop=True
+        )
         session.record_operation(
             OperationType.SORT, {"columns": sort_columns, "ascending": ascending}
         )
@@ -263,7 +272,11 @@ async def rename_columns(
         session.data_session.df = df.rename(columns=mapping)
         session.record_operation(OperationType.RENAME, {"mapping": mapping})
 
-        return {"success": True, "renamed": mapping, "columns": session.data_session.df.columns.tolist()}
+        return {
+            "success": True,
+            "renamed": mapping,
+            "columns": session.data_session.df.columns.tolist(),
+        }
 
     except Exception as e:
         logger.error(f"Error renaming columns: {e!s}")
@@ -321,7 +334,11 @@ async def add_column(
             {"name": name, "value": str(value) if value is not None else None, "formula": formula},
         )
 
-        return {"success": True, "column_added": name, "columns": session.data_session.df.columns.tolist()}
+        return {
+            "success": True,
+            "column_added": name,
+            "columns": session.data_session.df.columns.tolist(),
+        }
 
     except Exception as e:
         logger.error(f"Error adding column: {e!s}")
@@ -401,7 +418,9 @@ async def change_column_type(
 
         # Convert based on target dtype
         if dtype == "int":
-            session.data_session.df[column] = pd.to_numeric(df[column], errors=errors).astype("Int64")
+            session.data_session.df[column] = pd.to_numeric(df[column], errors=errors).astype(
+                "Int64"
+            )
         elif dtype == "float":
             session.data_session.df[column] = pd.to_numeric(df[column], errors=errors)
         elif dtype == "str":
@@ -571,14 +590,18 @@ async def update_column(
         elif operation == "extract":
             if pattern is None:
                 return {"success": False, "error": "Pattern required for extract operation"}
-            session.data_session.df[column] = df[column].astype(str).str.extract(pattern, expand=False)
+            session.data_session.df[column] = (
+                df[column].astype(str).str.extract(pattern, expand=False)
+            )
 
         elif operation == "split":
             if pattern is None:
                 pattern = " "
             if value is not None and isinstance(value, int):
                 # Extract specific part after split
-                session.data_session.df[column] = df[column].astype(str).str.split(pattern).str[value]
+                session.data_session.df[column] = (
+                    df[column].astype(str).str.split(pattern).str[value]
+                )
             else:
                 # Just do the split, take first part
                 session.data_session.df[column] = df[column].astype(str).str.split(pattern).str[0]
@@ -660,7 +683,9 @@ async def remove_duplicates(
         # Convert keep parameter
         keep_param: Literal["first", "last"] | Literal[False] = keep if keep != "none" else False
 
-        session.data_session.df = df.drop_duplicates(subset=subset, keep=keep_param).reset_index(drop=True)
+        session.data_session.df = df.drop_duplicates(subset=subset, keep=keep_param).reset_index(
+            drop=True
+        )
         rows_after = len(session.data_session.df)
 
         session.record_operation(
@@ -817,7 +842,9 @@ async def set_cell_value(
             old_value = old_value.item()
 
         # Set new value
-        session.data_session.df.iloc[row_index, session.data_session.df.columns.get_loc(column_name)] = value
+        session.data_session.df.iloc[
+            row_index, session.data_session.df.columns.get_loc(column_name)
+        ] = value
 
         # Record operation
         session.record_operation(
@@ -1028,7 +1055,9 @@ async def replace_in_column(
         original_values_sample = df[column].head(5).tolist()
 
         # Perform replacement
-        session.data_session.df[column] = df[column].astype(str).str.replace(pattern, replacement, regex=regex)
+        session.data_session.df[column] = (
+            df[column].astype(str).str.replace(pattern, replacement, regex=regex)
+        )
 
         updated_values_sample = session.data_session.df[column].head(5).tolist()
 
@@ -1173,7 +1202,9 @@ async def split_column(
         else:
             # Keep specific part
             if part_index is not None:
-                session.data_session.df[column] = df[column].astype(str).str.split(delimiter).str[part_index]
+                session.data_session.df[column] = (
+                    df[column].astype(str).str.split(delimiter).str[part_index]
+                )
             else:
                 # Keep first part by default
                 session.data_session.df[column] = df[column].astype(str).str.split(delimiter).str[0]
@@ -1679,7 +1710,9 @@ async def update_row(
 
         # Update the row
         for column, value in data.items():
-            session.data_session.df.iloc[row_index, session.data_session.df.columns.get_loc(column)] = value
+            session.data_session.df.iloc[
+                row_index, session.data_session.df.columns.get_loc(column)
+            ] = value
 
         # Get new values for tracking
         new_values: dict[str, Any] = {}

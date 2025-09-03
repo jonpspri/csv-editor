@@ -6,7 +6,7 @@ import logging
 from datetime import datetime, timedelta, timezone
 from typing import Any
 
-from ..exceptions import SessionExpiredError, SessionNotFoundError
+from ..exceptions import SessionExpiredError
 
 logger = logging.getLogger(__name__)
 
@@ -47,7 +47,7 @@ class SessionLifecycle:
     def get_lifecycle_info(self) -> dict[str, Any]:
         """Get session lifecycle information."""
         remaining = self.get_remaining_ttl()
-        
+
         return {
             "session_id": self.session_id,
             "created_at": self.created_at,

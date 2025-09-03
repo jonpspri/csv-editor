@@ -17,8 +17,6 @@ if TYPE_CHECKING:
     from fastmcp import Context
 
 
-
-
 async def load_csv(
     file_path: str,
     encoding: str = "utf-8",

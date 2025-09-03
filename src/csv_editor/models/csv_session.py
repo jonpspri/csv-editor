@@ -3,7 +3,7 @@
 from __future__ import annotations
 
 import logging
-from datetime import datetime, timedelta, timezone
+from datetime import datetime, timezone
 from pathlib import Path
 from typing import TYPE_CHECKING, Any
 from uuid import uuid4
@@ -61,7 +61,7 @@ class CSVSession:
         # Core components
         self.data_session = DataSession(self.session_id)
         self.lifecycle = SessionLifecycle(self.session_id, ttl_minutes)
-        
+
         # Auto-save configuration
         self.auto_save_config = auto_save_config or AutoSaveConfig()
         self.auto_save_manager = AutoSaveManager(self.session_id, self.auto_save_config)
@@ -105,7 +105,7 @@ class CSVSession:
         """Get session information."""
         data_info = self.data_session.get_data_info()
         lifecycle_info = self.lifecycle.get_lifecycle_info()
-        
+
         return SessionInfo(
             session_id=self.session_id,
             created_at=lifecycle_info["created_at"],
@@ -145,7 +145,9 @@ class CSVSession:
                 current_data=self.data_session.df,
                 metadata={
                     "file_path": self.data_session.file_path,
-                    "shape": self.data_session.df.shape if self.data_session.df is not None else None,
+                    "shape": (
+                        self.data_session.df.shape if self.data_session.df is not None else None
+                    ),
                 },
             )
 
@@ -437,7 +439,11 @@ class SessionManager:
     def list_sessions(self) -> list[SessionInfo]:
         """List all active sessions."""
         self._cleanup_expired()
-        return [session.get_info() for session in self.sessions.values() if session.data_session.has_data()]
+        return [
+            session.get_info()
+            for session in self.sessions.values()
+            if session.data_session.has_data()
+        ]
 
     def _cleanup_expired(self) -> None:
         """Mark expired sessions for cleanup."""

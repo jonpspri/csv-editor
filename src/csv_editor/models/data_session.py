@@ -33,15 +33,17 @@ class DataSession:
         self.original_df = df.copy()
         self.file_path = file_path
         self.update_access_time()
-        
+
         # Update metadata
-        self.metadata.update({
-            "file_path": file_path,
-            "shape": df.shape,
-            "columns": df.columns.tolist(),
-            "dtypes": {col: str(dtype) for col, dtype in df.dtypes.items()},
-            "loaded_at": datetime.now(timezone.utc).isoformat(),
-        })
+        self.metadata.update(
+            {
+                "file_path": file_path,
+                "shape": df.shape,
+                "columns": df.columns.tolist(),
+                "dtypes": {col: str(dtype) for col, dtype in df.dtypes.items()},
+                "loaded_at": datetime.now(timezone.utc).isoformat(),
+            }
+        )
 
     def update_access_time(self) -> None:
         """Update the last accessed time."""

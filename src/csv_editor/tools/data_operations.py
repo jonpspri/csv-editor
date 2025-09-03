@@ -44,14 +44,14 @@ def get_data_summary(session_id: str) -> dict[str, Any]:
     """Get a summary of the data in a session."""
     session_manager = get_session_manager()
     session = session_manager.get_session(session_id)
-    
+
     if not session:
         raise SessionNotFoundError(session_id)
-    if session.df is None:
+    if session.data_session.df is None:
         raise NoDataLoadedError(session_id)
-        
-    df = session.df
-    
+
+    df = session.data_session.df
+
     return {
         "session_id": session_id,
         "shape": df.shape,
@@ -67,16 +67,16 @@ def validate_row_index(df: pd.DataFrame, row_index: int) -> None:
     """Validate that a row index is within bounds."""
     if row_index < 0 or row_index >= len(df):
         raise InvalidRowIndexError(row_index, len(df) - 1)
-        
-        
+
+
 def validate_column_exists(df: pd.DataFrame, column: str) -> None:
     """Validate that a column exists in the dataframe."""
     from ..exceptions import ColumnNotFoundError
-    
+
     if column not in df.columns:
         raise ColumnNotFoundError(column, df.columns.tolist())
-        
-        
+
+
 def safe_type_conversion(series: pd.Series, target_type: str) -> pd.Series:
     """Safely convert a pandas Series to a target type."""
     try:

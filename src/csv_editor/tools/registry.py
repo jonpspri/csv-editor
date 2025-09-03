@@ -4,24 +4,24 @@ from __future__ import annotations
 
 import functools
 import logging
-from typing import Any, Awaitable, Callable, Dict, List
-
-from fastmcp import Context
+from collections.abc import Awaitable, Callable
+from typing import Any
 
 logger = logging.getLogger(__name__)
 
 # Type for tool functions
-ToolFunction = Callable[..., Awaitable[Dict[str, Any]]]
+ToolFunction = Callable[..., Awaitable[dict[str, Any]]]
+
 
 class ToolRegistry:
     """Registry for MCP tools to reduce code duplication."""
 
     def __init__(self):
         """Initialize the tool registry."""
-        self.tools: Dict[str, ToolFunction] = {}
-        self.tool_categories: Dict[str, List[str]] = {
+        self.tools: dict[str, ToolFunction] = {}
+        self.tool_categories: dict[str, list[str]] = {
             "io": [],
-            "data": [], 
+            "data": [],
             "analytics": [],
             "validation": [],
             "history": [],
@@ -31,17 +31,19 @@ class ToolRegistry:
 
     def register_tool(self, category: str, name: str):
         """Decorator to register a tool function."""
+
         def decorator(func: ToolFunction) -> ToolFunction:
             # Add to registry
             self.tools[name] = func
             if category in self.tool_categories:
                 self.tool_categories[category].append(name)
-            
+
             logger.debug(f"Registered tool '{name}' in category '{category}'")
             return func
+
         return decorator
 
-    def get_tools_by_category(self, category: str) -> List[str]:
+    def get_tools_by_category(self, category: str) -> list[str]:
         """Get all tool names in a category."""
         return self.tool_categories.get(category, [])
 
@@ -56,13 +58,14 @@ class ToolRegistry:
         """Get total number of registered tools."""
         return len(self.tools)
 
-    def get_category_summary(self) -> Dict[str, int]:
+    def get_category_summary(self) -> dict[str, int]:
         """Get summary of tools by category."""
         return {cat: len(tools) for cat, tools in self.tool_categories.items()}
 
 
 # Global registry instance
 _tool_registry: ToolRegistry | None = None
+
 
 def get_tool_registry() -> ToolRegistry:
     """Get or create the global tool registry."""
@@ -74,33 +77,36 @@ def get_tool_registry() -> ToolRegistry:
 
 def tool(category: str, name: str | None = None):
     """Decorator to register a tool with the registry."""
+
     def decorator(func: ToolFunction) -> ToolFunction:
         tool_name = name or func.__name__
         registry = get_tool_registry()
         return registry.register_tool(category, tool_name)(func)
+
     return decorator
 
 
 def with_session_validation(func: ToolFunction) -> ToolFunction:
     """Decorator to add common session validation to tool functions."""
+
     @functools.wraps(func)
-    async def wrapper(*args, **kwargs) -> Dict[str, Any]:
+    async def wrapper(*args, **kwargs) -> dict[str, Any]:
         # Extract session_id from args/kwargs
         session_id = None
         if args:
             session_id = args[0]  # Assume first arg is session_id
         elif "session_id" in kwargs:
             session_id = kwargs["session_id"]
-            
+
         if not session_id:
             return {
                 "success": False,
                 "error": {
                     "type": "MissingParameterError",
                     "message": "session_id is required",
-                }
+                },
             }
-            
+
         try:
             return await func(*args, **kwargs)
         except Exception as e:
@@ -110,21 +116,23 @@ def with_session_validation(func: ToolFunction) -> ToolFunction:
                 "error": {
                     "type": e.__class__.__name__,
                     "message": str(e),
-                }
+                },
             }
+
     return wrapper
 
 
 def with_error_handling(func: ToolFunction) -> ToolFunction:
     """Decorator to add standardized error handling to tool functions."""
+
     @functools.wraps(func)
-    async def wrapper(*args, **kwargs) -> Dict[str, Any]:
+    async def wrapper(*args, **kwargs) -> dict[str, Any]:
         try:
             return await func(*args, **kwargs)
         except Exception as e:
             logger.error(f"Unexpected error in {func.__name__}: {e}")
             # Check if it's one of our custom exceptions
-            if hasattr(e, 'to_dict'):
+            if hasattr(e, "to_dict"):
                 return {"success": False, "error": e.to_dict()}
             else:
                 return {
@@ -132,25 +140,39 @@ def with_error_handling(func: ToolFunction) -> ToolFunction:
                     "error": {
                         "type": "UnexpectedError",
                         "message": str(e),
-                    }
+                    },
                 }
+
     return wrapper
 
 
 def register_tools_from_module(mcp: Any, module: Any, category: str) -> None:
     """Register all tools from a module with the given category."""
     registry = get_tool_registry()
-    
+
     # Find all async functions that start with certain prefixes
-    tool_prefixes = ["load_", "export_", "filter_", "get_", "add_", "remove_", 
-                     "update_", "validate_", "analyze_", "calculate_", "create_"]
-    
+    tool_prefixes = [
+        "load_",
+        "export_",
+        "filter_",
+        "get_",
+        "add_",
+        "remove_",
+        "update_",
+        "validate_",
+        "analyze_",
+        "calculate_",
+        "create_",
+    ]
+
     for attr_name in dir(module):
         attr = getattr(module, attr_name)
-        if (callable(attr) and 
-            not attr_name.startswith('_') and 
-            any(attr_name.startswith(prefix) for prefix in tool_prefixes)):
-            
+        if (
+            callable(attr)
+            and not attr_name.startswith("_")
+            and any(attr_name.startswith(prefix) for prefix in tool_prefixes)
+        ):
+
             # Register the tool
             registry.register_tool(category, attr_name)(attr)
             logger.info(f"Auto-registered tool '{attr_name}' in category '{category}'")
