@@ -13,14 +13,35 @@ RowData = dict[str, CellValue] | list[CellValue]
 OperationResult = dict[str, Any]  # Operation results have complex mixed types
 FilterCondition = dict[str, str | CellValue]  # For filter condition dicts
 
+from ..exceptions import (
+    ColumnNotFoundError,
+    DataError,
+    InvalidParameterError,
+    InvalidRowIndexError,
+    NoDataLoadedError,
+    SessionNotFoundError,
+)
 from ..models.csv_session import get_session_manager
 from ..models.data_models import OperationType
-from .io_operations import _create_data_preview_with_indices
+from .data_operations import create_data_preview_with_indices
 
 if TYPE_CHECKING:
     from fastmcp import Context
 
 logger = logging.getLogger(__name__)
+
+
+def _get_session_data(session_id: str) -> tuple[Any, pd.DataFrame]:
+    """Get session and DataFrame, raising appropriate exceptions if not found."""
+    manager = get_session_manager()
+    session = manager.get_session(session_id)
+    
+    if not session:
+        raise SessionNotFoundError(session_id)
+    if not session.data_session.has_data():
+        raise NoDataLoadedError(session_id)
+        
+    return session, session.data_session.df
 
 
 async def filter_rows(
@@ -45,13 +66,7 @@ async def filter_rows(
         Dict with success status and filtered row count
     """
     try:
-        manager = get_session_manager()
-        session = manager.get_session(session_id)
-
-        if not session or session.df is None:
-            return {"success": False, "error": "Invalid session or no data loaded"}
-
-        df = session.df
+        session, df = _get_session_data(session_id)
         mask = pd.Series([True] * len(df))
 
         for condition in conditions:
@@ -60,7 +75,7 @@ async def filter_rows(
             value = condition.get("value")
 
             if column not in df.columns:
-                return {"success": False, "error": f"Column '{column}' not found"}
+                raise ColumnNotFoundError(column, df.columns.tolist())
 
             col_data = df[column]
 
@@ -91,31 +106,40 @@ async def filter_rows(
             elif operator == "not_null":
                 condition_mask = col_data.notna()
             else:
-                return {"success": False, "error": f"Unknown operator: {operator}"}
+                raise InvalidParameterError("operator", operator, "Valid operators: ==, !=, >, <, >=, <=, contains, starts_with, ends_with, in, not_in, is_null, not_null")
 
             mask = mask & condition_mask if mode == "and" else mask | condition_mask
 
-        session.df = df[mask].reset_index(drop=True)
+        session.data_session.df = df[mask].reset_index(drop=True)
         session.record_operation(
             OperationType.FILTER,
             {
                 "conditions": conditions,
                 "mode": mode,
                 "rows_before": len(df),
-                "rows_after": len(session.df),
+                "rows_after": len(session.data_session.df),
             },
         )
 
         return {
             "success": True,
             "rows_before": len(df),
-            "rows_after": len(session.df),
-            "rows_filtered": len(df) - len(session.df),
+            "rows_after": len(session.data_session.df),
+            "rows_filtered": len(df) - len(session.data_session.df),
         }
 
+    except (SessionNotFoundError, NoDataLoadedError, ColumnNotFoundError, InvalidParameterError) as e:
+        logger.error(f"Filter operation failed: {e.message}")
+        return {"success": False, "error": e.to_dict()}
+    except (ValueError, TypeError) as e:
+        logger.error(f"Data type error in filter operation: {e!s}")
+        return {"success": False, "error": {"type": "DataTypeError", "message": str(e)}}
+    except pd.errors.ParserError as e:
+        logger.error(f"Pandas parsing error: {e!s}")
+        return {"success": False, "error": {"type": "ParsingError", "message": str(e)}}
     except Exception as e:
-        logger.error(f"Error filtering rows: {e!s}")
-        return {"success": False, "error": str(e)}
+        logger.error(f"Unexpected error in filter operation: {e!s}")
+        return {"success": False, "error": {"type": "UnexpectedError", "message": str(e)}}
 
 
 async def sort_data(
@@ -136,10 +160,7 @@ async def sort_data(
         manager = get_session_manager()
         session = manager.get_session(session_id)
 
-        if not session or session.df is None:
-            return {"success": False, "error": "Invalid session or no data loaded"}
-
-        df = session.df
+        session, df = _get_session_data(session_id)
 
         # Parse columns into names and ascending flags
         sort_columns: list[str] = []
@@ -160,7 +181,7 @@ async def sort_data(
             if col not in df.columns:
                 return {"success": False, "error": f"Column '{col}' not found"}
 
-        session.df = df.sort_values(by=sort_columns, ascending=ascending).reset_index(drop=True)
+        session.data_session.df = df.sort_values(by=sort_columns, ascending=ascending).reset_index(drop=True)
         session.record_operation(
             OperationType.SORT, {"columns": sort_columns, "ascending": ascending}
         )
@@ -190,17 +211,14 @@ async def select_columns(
         manager = get_session_manager()
         session = manager.get_session(session_id)
 
-        if not session or session.df is None:
-            return {"success": False, "error": "Invalid session or no data loaded"}
-
-        df = session.df
+        session, df = _get_session_data(session_id)
 
         # Validate columns exist
         missing_cols = [col for col in columns if col not in df.columns]
         if missing_cols:
             return {"success": False, "error": f"Columns not found: {missing_cols}"}
 
-        session.df = df[columns].copy()
+        session.data_session.df = df[columns].copy()
         session.record_operation(
             OperationType.SELECT,
             {"columns": columns, "columns_before": df.columns.tolist(), "columns_after": columns},
@@ -235,20 +253,17 @@ async def rename_columns(
         manager = get_session_manager()
         session = manager.get_session(session_id)
 
-        if not session or session.df is None:
-            return {"success": False, "error": "Invalid session or no data loaded"}
-
-        df = session.df
+        session, df = _get_session_data(session_id)
 
         # Validate columns exist
         missing_cols = [col for col in mapping if col not in df.columns]
         if missing_cols:
             return {"success": False, "error": f"Columns not found: {missing_cols}"}
 
-        session.df = df.rename(columns=mapping)
+        session.data_session.df = df.rename(columns=mapping)
         session.record_operation(OperationType.RENAME, {"mapping": mapping})
 
-        return {"success": True, "renamed": mapping, "columns": session.df.columns.tolist()}
+        return {"success": True, "renamed": mapping, "columns": session.data_session.df.columns.tolist()}
 
     except Exception as e:
         logger.error(f"Error renaming columns: {e!s}")
@@ -279,10 +294,7 @@ async def add_column(
         manager = get_session_manager()
         session = manager.get_session(session_id)
 
-        if not session or session.df is None:
-            return {"success": False, "error": "Invalid session or no data loaded"}
-
-        df = session.df
+        session, df = _get_session_data(session_id)
 
         if name in df.columns:
             return {"success": False, "error": f"Column '{name}' already exists"}
@@ -290,7 +302,7 @@ async def add_column(
         if formula:
             # Evaluate formula in the context of the dataframe
             try:
-                session.df[name] = df.eval(formula)
+                session.data_session.df[name] = df.eval(formula)
             except Exception as e:
                 return {"success": False, "error": f"Formula evaluation failed: {e!s}"}
         elif isinstance(value, list):
@@ -299,17 +311,17 @@ async def add_column(
                     "success": False,
                     "error": f"Value list length ({len(value)}) doesn't match row count ({len(df)})",
                 }
-            session.df[name] = value
+            session.data_session.df[name] = value
         else:
             # Scalar value or None
-            session.df[name] = value
+            session.data_session.df[name] = value
 
         session.record_operation(
             OperationType.ADD_COLUMN,
             {"name": name, "value": str(value) if value is not None else None, "formula": formula},
         )
 
-        return {"success": True, "column_added": name, "columns": session.df.columns.tolist()}
+        return {"success": True, "column_added": name, "columns": session.data_session.df.columns.tolist()}
 
     except Exception as e:
         logger.error(f"Error adding column: {e!s}")
@@ -334,23 +346,20 @@ async def remove_columns(
         manager = get_session_manager()
         session = manager.get_session(session_id)
 
-        if not session or session.df is None:
-            return {"success": False, "error": "Invalid session or no data loaded"}
-
-        df = session.df
+        session, df = _get_session_data(session_id)
 
         # Validate columns exist
         missing_cols = [col for col in columns if col not in df.columns]
         if missing_cols:
             return {"success": False, "error": f"Columns not found: {missing_cols}"}
 
-        session.df = df.drop(columns=columns)
+        session.data_session.df = df.drop(columns=columns)
         session.record_operation(OperationType.REMOVE_COLUMN, {"columns": columns})
 
         return {
             "success": True,
             "removed_columns": columns,
-            "remaining_columns": session.df.columns.tolist(),
+            "remaining_columns": session.data_session.df.columns.tolist(),
         }
 
     except Exception as e:
@@ -382,10 +391,7 @@ async def change_column_type(
         manager = get_session_manager()
         session = manager.get_session(session_id)
 
-        if not session or session.df is None:
-            return {"success": False, "error": "Invalid session or no data loaded"}
-
-        df = session.df
+        session, df = _get_session_data(session_id)
 
         if column not in df.columns:
             return {"success": False, "error": f"Column '{column}' not found"}
@@ -395,21 +401,21 @@ async def change_column_type(
 
         # Convert based on target dtype
         if dtype == "int":
-            session.df[column] = pd.to_numeric(df[column], errors=errors).astype("Int64")
+            session.data_session.df[column] = pd.to_numeric(df[column], errors=errors).astype("Int64")
         elif dtype == "float":
-            session.df[column] = pd.to_numeric(df[column], errors=errors)
+            session.data_session.df[column] = pd.to_numeric(df[column], errors=errors)
         elif dtype == "str":
-            session.df[column] = df[column].astype(str)
+            session.data_session.df[column] = df[column].astype(str)
         elif dtype == "bool":
-            session.df[column] = df[column].astype(bool)
+            session.data_session.df[column] = df[column].astype(bool)
         elif dtype == "datetime":
-            session.df[column] = pd.to_datetime(df[column], errors=errors)
+            session.data_session.df[column] = pd.to_datetime(df[column], errors=errors)
         elif dtype == "category":
-            session.df[column] = df[column].astype("category")
+            session.data_session.df[column] = df[column].astype("category")
         else:
             return {"success": False, "error": f"Unsupported dtype: {dtype}"}
 
-        null_count_after = session.df[column].isna().sum()
+        null_count_after = session.data_session.df[column].isna().sum()
 
         session.record_operation(
             OperationType.CHANGE_TYPE,
@@ -420,7 +426,7 @@ async def change_column_type(
             "success": True,
             "column": column,
             "original_type": original_dtype,
-            "new_type": str(session.df[column].dtype),
+            "new_type": str(session.data_session.df[column].dtype),
             "null_count_before": int(null_count_before),
             "null_count_after": int(null_count_after),
             "conversion_errors": int(null_count_after - null_count_before),
@@ -455,10 +461,7 @@ async def fill_missing_values(
         manager = get_session_manager()
         session = manager.get_session(session_id)
 
-        if not session or session.df is None:
-            return {"success": False, "error": "Invalid session or no data loaded"}
-
-        df = session.df
+        session, df = _get_session_data(session_id)
         null_counts_before = df.isnull().sum().to_dict()
 
         if columns:
@@ -470,32 +473,32 @@ async def fill_missing_values(
             target_cols = df.columns.tolist()
 
         if strategy == "drop":
-            session.df = df.dropna(subset=target_cols)
+            session.data_session.df = df.dropna(subset=target_cols)
         elif strategy == "fill":
             if value is None:
                 return {"success": False, "error": "Value required for 'fill' strategy"}
-            session.df[target_cols] = df[target_cols].fillna(value)
+            session.data_session.df[target_cols] = df[target_cols].fillna(value)
         elif strategy == "forward":
-            session.df[target_cols] = df[target_cols].ffill()
+            session.data_session.df[target_cols] = df[target_cols].ffill()
         elif strategy == "backward":
-            session.df[target_cols] = df[target_cols].bfill()
+            session.data_session.df[target_cols] = df[target_cols].bfill()
         elif strategy == "mean":
             for col in target_cols:
                 if df[col].dtype in ["int64", "float64"]:
-                    session.df[col] = df[col].fillna(df[col].mean())
+                    session.data_session.df[col] = df[col].fillna(df[col].mean())
         elif strategy == "median":
             for col in target_cols:
                 if df[col].dtype in ["int64", "float64"]:
-                    session.df[col] = df[col].fillna(df[col].median())
+                    session.data_session.df[col] = df[col].fillna(df[col].median())
         elif strategy == "mode":
             for col in target_cols:
                 mode_val = df[col].mode()
                 if len(mode_val) > 0:
-                    session.df[col] = df[col].fillna(mode_val[0])
+                    session.data_session.df[col] = df[col].fillna(mode_val[0])
         else:
             return {"success": False, "error": f"Unknown strategy: {strategy}"}
 
-        null_counts_after = session.df.isnull().sum().to_dict()
+        null_counts_after = session.data_session.df.isnull().sum().to_dict()
 
         session.record_operation(
             OperationType.FILL_MISSING,
@@ -510,7 +513,7 @@ async def fill_missing_values(
             "success": True,
             "strategy": strategy,
             "rows_before": len(df),
-            "rows_after": len(session.df),
+            "rows_after": len(session.data_session.df),
             "null_counts_before": null_counts_before,
             "null_counts_after": null_counts_after,
         }
@@ -548,10 +551,7 @@ async def update_column(
         manager = get_session_manager()
         session = manager.get_session(session_id)
 
-        if not session or session.df is None:
-            return {"success": False, "error": "Invalid session or no data loaded"}
-
-        df = session.df
+        session, df = _get_session_data(session_id)
 
         if column not in df.columns:
             return {"success": False, "error": f"Column '{column}' not found"}
@@ -564,43 +564,43 @@ async def update_column(
                     "success": False,
                     "error": "Pattern and replacement required for replace operation",
                 }
-            session.df[column] = (
+            session.data_session.df[column] = (
                 df[column].astype(str).str.replace(pattern, replacement, regex=True)
             )
 
         elif operation == "extract":
             if pattern is None:
                 return {"success": False, "error": "Pattern required for extract operation"}
-            session.df[column] = df[column].astype(str).str.extract(pattern, expand=False)
+            session.data_session.df[column] = df[column].astype(str).str.extract(pattern, expand=False)
 
         elif operation == "split":
             if pattern is None:
                 pattern = " "
             if value is not None and isinstance(value, int):
                 # Extract specific part after split
-                session.df[column] = df[column].astype(str).str.split(pattern).str[value]
+                session.data_session.df[column] = df[column].astype(str).str.split(pattern).str[value]
             else:
                 # Just do the split, take first part
-                session.df[column] = df[column].astype(str).str.split(pattern).str[0]
+                session.data_session.df[column] = df[column].astype(str).str.split(pattern).str[0]
 
         elif operation == "strip":
-            session.df[column] = df[column].astype(str).str.strip()
+            session.data_session.df[column] = df[column].astype(str).str.strip()
 
         elif operation == "upper":
-            session.df[column] = df[column].astype(str).str.upper()
+            session.data_session.df[column] = df[column].astype(str).str.upper()
 
         elif operation == "lower":
-            session.df[column] = df[column].astype(str).str.lower()
+            session.data_session.df[column] = df[column].astype(str).str.lower()
 
         elif operation == "fill":
             if value is None:
                 return {"success": False, "error": "Value required for fill operation"}
-            session.df[column] = df[column].fillna(value)
+            session.data_session.df[column] = df[column].fillna(value)
 
         else:
             return {"success": False, "error": f"Unknown operation: {operation}"}
 
-        updated_values_sample = session.df[column].head(5).tolist()
+        updated_values_sample = session.data_session.df[column].head(5).tolist()
 
         session.record_operation(
             OperationType.UPDATE_COLUMN,
@@ -619,7 +619,7 @@ async def update_column(
             "operation": operation,
             "original_sample": original_values_sample,
             "updated_sample": updated_values_sample,
-            "rows_updated": len(session.df),
+            "rows_updated": len(session.data_session.df),
         }
 
     except Exception as e:
@@ -649,10 +649,7 @@ async def remove_duplicates(
         manager = get_session_manager()
         session = manager.get_session(session_id)
 
-        if not session or session.df is None:
-            return {"success": False, "error": "Invalid session or no data loaded"}
-
-        df = session.df
+        session, df = _get_session_data(session_id)
         rows_before = len(df)
 
         if subset:
@@ -663,8 +660,8 @@ async def remove_duplicates(
         # Convert keep parameter
         keep_param: Literal["first", "last"] | Literal[False] = keep if keep != "none" else False
 
-        session.df = df.drop_duplicates(subset=subset, keep=keep_param).reset_index(drop=True)
-        rows_after = len(session.df)
+        session.data_session.df = df.drop_duplicates(subset=subset, keep=keep_param).reset_index(drop=True)
+        rows_after = len(session.data_session.df)
 
         session.record_operation(
             OperationType.REMOVE_DUPLICATES,
@@ -716,10 +713,7 @@ async def get_cell_value(
         manager = get_session_manager()
         session = manager.get_session(session_id)
 
-        if not session or session.df is None:
-            return {"success": False, "error": "Invalid session or no data loaded"}
-
-        df = session.df
+        session, df = _get_session_data(session_id)
 
         # Validate row index
         if row_index < 0 or row_index >= len(df):
@@ -791,10 +785,7 @@ async def set_cell_value(
         manager = get_session_manager()
         session = manager.get_session(session_id)
 
-        if not session or session.df is None:
-            return {"success": False, "error": "Invalid session or no data loaded"}
-
-        df = session.df
+        session, df = _get_session_data(session_id)
 
         # Validate row index
         if row_index < 0 or row_index >= len(df):
@@ -826,7 +817,7 @@ async def set_cell_value(
             old_value = old_value.item()
 
         # Set new value
-        session.df.iloc[row_index, session.df.columns.get_loc(column_name)] = value
+        session.data_session.df.iloc[row_index, session.data_session.df.columns.get_loc(column_name)] = value
 
         # Record operation
         session.record_operation(
@@ -878,10 +869,7 @@ async def get_row_data(
         manager = get_session_manager()
         session = manager.get_session(session_id)
 
-        if not session or session.df is None:
-            return {"success": False, "error": "Invalid session or no data loaded"}
-
-        df = session.df
+        session, df = _get_session_data(session_id)
 
         # Validate row index
         if row_index < 0 or row_index >= len(df):
@@ -948,10 +936,7 @@ async def get_column_data(
         manager = get_session_manager()
         session = manager.get_session(session_id)
 
-        if not session or session.df is None:
-            return {"success": False, "error": "Invalid session or no data loaded"}
-
-        df = session.df
+        session, df = _get_session_data(session_id)
 
         # Validate column exists
         if column not in df.columns:
@@ -1035,10 +1020,7 @@ async def replace_in_column(
         manager = get_session_manager()
         session = manager.get_session(session_id)
 
-        if not session or session.df is None:
-            return {"success": False, "error": "Invalid session or no data loaded"}
-
-        df = session.df
+        session, df = _get_session_data(session_id)
 
         if column not in df.columns:
             return {"success": False, "error": f"Column '{column}' not found"}
@@ -1046,9 +1028,9 @@ async def replace_in_column(
         original_values_sample = df[column].head(5).tolist()
 
         # Perform replacement
-        session.df[column] = df[column].astype(str).str.replace(pattern, replacement, regex=regex)
+        session.data_session.df[column] = df[column].astype(str).str.replace(pattern, replacement, regex=regex)
 
-        updated_values_sample = session.df[column].head(5).tolist()
+        updated_values_sample = session.data_session.df[column].head(5).tolist()
 
         session.record_operation(
             OperationType.UPDATE_COLUMN,
@@ -1069,7 +1051,7 @@ async def replace_in_column(
             "replacement": replacement,
             "original_sample": original_values_sample,
             "updated_sample": updated_values_sample,
-            "rows_updated": len(session.df),
+            "rows_updated": len(session.data_session.df),
         }
 
     except Exception as e:
@@ -1104,10 +1086,7 @@ async def extract_from_column(
         manager = get_session_manager()
         session = manager.get_session(session_id)
 
-        if not session or session.df is None:
-            return {"success": False, "error": "Invalid session or no data loaded"}
-
-        df = session.df
+        session, df = _get_session_data(session_id)
 
         if column not in df.columns:
             return {"success": False, "error": f"Column '{column}' not found"}
@@ -1115,9 +1094,9 @@ async def extract_from_column(
         original_values_sample = df[column].head(5).tolist()
 
         # Perform extraction
-        session.df[column] = df[column].astype(str).str.extract(pattern, expand=expand)
+        session.data_session.df[column] = df[column].astype(str).str.extract(pattern, expand=expand)
 
-        updated_values_sample = session.df[column].head(5).tolist()
+        updated_values_sample = session.data_session.df[column].head(5).tolist()
 
         session.record_operation(
             OperationType.UPDATE_COLUMN,
@@ -1136,7 +1115,7 @@ async def extract_from_column(
             "pattern": pattern,
             "original_sample": original_values_sample,
             "updated_sample": updated_values_sample,
-            "rows_updated": len(session.df),
+            "rows_updated": len(session.data_session.df),
         }
 
     except Exception as e:
@@ -1174,10 +1153,7 @@ async def split_column(
         manager = get_session_manager()
         session = manager.get_session(session_id)
 
-        if not session or session.df is None:
-            return {"success": False, "error": "Invalid session or no data loaded"}
-
-        df = session.df
+        session, df = _get_session_data(session_id)
 
         if column not in df.columns:
             return {"success": False, "error": f"Column '{column}' not found"}
@@ -1190,18 +1166,18 @@ async def split_column(
             split_data = df[column].astype(str).str.split(delimiter, expand=True)
             # Replace original column with split columns
             for i, col_data in enumerate(split_data.columns):
-                session.df[f"{column}_{i}"] = split_data[col_data]
+                session.data_session.df[f"{column}_{i}"] = split_data[col_data]
             # Drop original column
-            session.df = session.df.drop(columns=[column])
+            session.data_session.df = session.data_session.df.drop(columns=[column])
             updated_info = f"Expanded to {len(split_data.columns)} columns"
         else:
             # Keep specific part
             if part_index is not None:
-                session.df[column] = df[column].astype(str).str.split(delimiter).str[part_index]
+                session.data_session.df[column] = df[column].astype(str).str.split(delimiter).str[part_index]
             else:
                 # Keep first part by default
-                session.df[column] = df[column].astype(str).str.split(delimiter).str[0]
-            updated_info = session.df[column].head(5).tolist()
+                session.data_session.df[column] = df[column].astype(str).str.split(delimiter).str[0]
+            updated_info = session.data_session.df[column].head(5).tolist()
 
         session.record_operation(
             OperationType.UPDATE_COLUMN,
@@ -1220,7 +1196,7 @@ async def split_column(
             "operation": "split",
             "delimiter": delimiter,
             "original_sample": original_values_sample,
-            "rows_updated": len(session.df),
+            "rows_updated": len(session.data_session.df),
         }
 
         if expand_to_columns:
@@ -1262,10 +1238,7 @@ async def transform_column_case(
         manager = get_session_manager()
         session = manager.get_session(session_id)
 
-        if not session or session.df is None:
-            return {"success": False, "error": "Invalid session or no data loaded"}
-
-        df = session.df
+        session, df = _get_session_data(session_id)
 
         if column not in df.columns:
             return {"success": False, "error": f"Column '{column}' not found"}
@@ -1274,17 +1247,17 @@ async def transform_column_case(
 
         # Perform case transformation
         if transform == "upper":
-            session.df[column] = df[column].astype(str).str.upper()
+            session.data_session.df[column] = df[column].astype(str).str.upper()
         elif transform == "lower":
-            session.df[column] = df[column].astype(str).str.lower()
+            session.data_session.df[column] = df[column].astype(str).str.lower()
         elif transform == "title":
-            session.df[column] = df[column].astype(str).str.title()
+            session.data_session.df[column] = df[column].astype(str).str.title()
         elif transform == "capitalize":
-            session.df[column] = df[column].astype(str).str.capitalize()
+            session.data_session.df[column] = df[column].astype(str).str.capitalize()
         else:
             return {"success": False, "error": f"Unknown transform: {transform}"}
 
-        updated_values_sample = session.df[column].head(5).tolist()
+        updated_values_sample = session.data_session.df[column].head(5).tolist()
 
         session.record_operation(
             OperationType.UPDATE_COLUMN,
@@ -1302,7 +1275,7 @@ async def transform_column_case(
             "transform": transform,
             "original_sample": original_values_sample,
             "updated_sample": updated_values_sample,
-            "rows_updated": len(session.df),
+            "rows_updated": len(session.data_session.df),
         }
 
     except Exception as e:
@@ -1336,10 +1309,7 @@ async def strip_column(
         manager = get_session_manager()
         session = manager.get_session(session_id)
 
-        if not session or session.df is None:
-            return {"success": False, "error": "Invalid session or no data loaded"}
-
-        df = session.df
+        session, df = _get_session_data(session_id)
 
         if column not in df.columns:
             return {"success": False, "error": f"Column '{column}' not found"}
@@ -1348,11 +1318,11 @@ async def strip_column(
 
         # Perform strip
         if chars is None:
-            session.df[column] = df[column].astype(str).str.strip()
+            session.data_session.df[column] = df[column].astype(str).str.strip()
         else:
-            session.df[column] = df[column].astype(str).str.strip(chars)
+            session.data_session.df[column] = df[column].astype(str).str.strip(chars)
 
-        updated_values_sample = session.df[column].head(5).tolist()
+        updated_values_sample = session.data_session.df[column].head(5).tolist()
 
         session.record_operation(
             OperationType.UPDATE_COLUMN,
@@ -1370,7 +1340,7 @@ async def strip_column(
             "chars": chars,
             "original_sample": original_values_sample,
             "updated_sample": updated_values_sample,
-            "rows_updated": len(session.df),
+            "rows_updated": len(session.data_session.df),
         }
 
     except Exception as e:
@@ -1404,10 +1374,7 @@ async def fill_column_nulls(
         manager = get_session_manager()
         session = manager.get_session(session_id)
 
-        if not session or session.df is None:
-            return {"success": False, "error": "Invalid session or no data loaded"}
-
-        df = session.df
+        session, df = _get_session_data(session_id)
 
         if column not in df.columns:
             return {"success": False, "error": f"Column '{column}' not found"}
@@ -1417,11 +1384,11 @@ async def fill_column_nulls(
         original_values_sample = df[column].head(5).tolist()
 
         # Fill nulls
-        session.df[column] = df[column].fillna(value)
+        session.data_session.df[column] = df[column].fillna(value)
 
         # Count nulls after
-        nulls_after = session.df[column].isna().sum()
-        updated_values_sample = session.df[column].head(5).tolist()
+        nulls_after = session.data_session.df[column].isna().sum()
+        updated_values_sample = session.data_session.df[column].head(5).tolist()
 
         session.record_operation(
             OperationType.UPDATE_COLUMN,
@@ -1443,7 +1410,7 @@ async def fill_column_nulls(
             "nulls_filled": int(nulls_before - nulls_after),
             "original_sample": original_values_sample,
             "updated_sample": updated_values_sample,
-            "rows_updated": len(session.df),
+            "rows_updated": len(session.data_session.df),
         }
 
     except Exception as e:
@@ -1496,10 +1463,7 @@ async def insert_row(
         manager = get_session_manager()
         session = manager.get_session(session_id)
 
-        if not session or session.df is None:
-            return {"success": False, "error": "Invalid session or no data loaded"}
-
-        df = session.df
+        session, df = _get_session_data(session_id)
         rows_before = len(df)
 
         # Handle append case
@@ -1539,14 +1503,14 @@ async def insert_row(
 
         # Insert the row
         if row_index == 0:
-            session.df = pd.concat([new_row_df, df], ignore_index=True)
+            session.data_session.df = pd.concat([new_row_df, df], ignore_index=True)
         elif row_index >= len(df):
-            session.df = pd.concat([df, new_row_df], ignore_index=True)
+            session.data_session.df = pd.concat([df, new_row_df], ignore_index=True)
         else:
             # Split and insert
             before = df.iloc[:row_index]
             after = df.iloc[row_index:]
-            session.df = pd.concat([before, new_row_df, after], ignore_index=True)
+            session.data_session.df = pd.concat([before, new_row_df, after], ignore_index=True)
 
         session.record_operation(
             OperationType.UPDATE_COLUMN,  # Reuse existing type
@@ -1555,7 +1519,7 @@ async def insert_row(
                 "row_index": row_index,
                 "data": row_data,
                 "rows_before": rows_before,
-                "rows_after": len(session.df),
+                "rows_after": len(session.data_session.df),
             },
         )
 
@@ -1565,7 +1529,7 @@ async def insert_row(
             "row_index": row_index,
             "data_inserted": row_data,
             "rows_before": rows_before,
-            "rows_after": len(session.df),
+            "rows_after": len(session.data_session.df),
             "columns": df.columns.tolist(),
         }
 
@@ -1597,10 +1561,7 @@ async def delete_row(
         manager = get_session_manager()
         session = manager.get_session(session_id)
 
-        if not session or session.df is None:
-            return {"success": False, "error": "Invalid session or no data loaded"}
-
-        df = session.df
+        session, df = _get_session_data(session_id)
         rows_before = len(df)
 
         # Validate row index
@@ -1621,7 +1582,7 @@ async def delete_row(
                 deleted_data[key] = value.item()
 
         # Delete the row
-        session.df = df.drop(df.index[row_index]).reset_index(drop=True)
+        session.data_session.df = df.drop(df.index[row_index]).reset_index(drop=True)
 
         session.record_operation(
             OperationType.UPDATE_COLUMN,  # Reuse existing type
@@ -1630,7 +1591,7 @@ async def delete_row(
                 "row_index": row_index,
                 "deleted_data": deleted_data,
                 "rows_before": rows_before,
-                "rows_after": len(session.df),
+                "rows_after": len(session.data_session.df),
             },
         )
 
@@ -1640,7 +1601,7 @@ async def delete_row(
             "row_index": row_index,
             "deleted_data": deleted_data,
             "rows_before": rows_before,
-            "rows_after": len(session.df),
+            "rows_after": len(session.data_session.df),
         }
 
     except Exception as e:
@@ -1687,10 +1648,7 @@ async def update_row(
         manager = get_session_manager()
         session = manager.get_session(session_id)
 
-        if not session or session.df is None:
-            return {"success": False, "error": "Invalid session or no data loaded"}
-
-        df = session.df
+        session, df = _get_session_data(session_id)
 
         # Validate row index
         if row_index < 0 or row_index >= len(df):
@@ -1721,12 +1679,12 @@ async def update_row(
 
         # Update the row
         for column, value in data.items():
-            session.df.iloc[row_index, session.df.columns.get_loc(column)] = value
+            session.data_session.df.iloc[row_index, session.data_session.df.columns.get_loc(column)] = value
 
         # Get new values for tracking
         new_values: dict[str, Any] = {}
         for col in data:
-            new_val = session.df.iloc[row_index][col]
+            new_val = session.data_session.df.iloc[row_index][col]
             if pd.isna(new_val):
                 new_values[col] = None
             elif hasattr(new_val, "item"):
@@ -1792,10 +1750,7 @@ async def inspect_data_around(
         manager = get_session_manager()
         session = manager.get_session(session_id)
 
-        if not session or session.df is None:
-            return {"success": False, "error": "Invalid session or no data loaded"}
-
-        df = session.df
+        session, df = _get_session_data(session_id)
 
         # Handle column specification
         if isinstance(column, int):
@@ -1886,10 +1841,7 @@ async def find_cells_with_value(
         manager = get_session_manager()
         session = manager.get_session(session_id)
 
-        if not session or session.df is None:
-            return {"success": False, "error": "Invalid session or no data loaded"}
-
-        df = session.df
+        session, df = _get_session_data(session_id)
         matches = []
 
         # Determine columns to search
@@ -1975,10 +1927,7 @@ async def get_data_summary(
         manager = get_session_manager()
         session = manager.get_session(session_id)
 
-        if not session or session.df is None:
-            return {"success": False, "error": "Invalid session or no data loaded"}
-
-        df = session.df
+        session, df = _get_session_data(session_id)
 
         # Basic information
         summary = {

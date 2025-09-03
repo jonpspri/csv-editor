@@ -10,7 +10,8 @@ from fastmcp import FastMCP
 
 # Local imports
 from .models import get_session_manager
-from .tools.io_operations import _create_data_preview_with_indices
+from .tools.data_operations import create_data_preview_with_indices
+from .utils.logging_config import get_logger, set_correlation_id, setup_structured_logging
 from .tools.mcp_analytics_tools import register_analytics_tools
 from .tools.mcp_data_tools import register_data_tools
 from .tools.mcp_history_tools import register_history_tools
@@ -21,11 +22,8 @@ from .tools.mcp_validation_tools import register_validation_tools
 from .tools.transformations import get_cell_value as _get_cell_value
 from .tools.transformations import get_row_data as _get_row_data
 
-# Configure logging
-logging.basicConfig(
-    level=logging.INFO, format="%(asctime)s - %(name)s - %(levelname)s - %(message)s"
-)
-logger = logging.getLogger(__name__)
+# Configure structured logging
+logger = get_logger(__name__)
 
 
 def _load_instructions() -> str:
@@ -65,19 +63,19 @@ async def get_csv_data(session_id: str) -> dict[str, Any]:
     session_manager = get_session_manager()
     session = session_manager.get_session(session_id)
 
-    if not session or session.df is None:
+    if not session or not session.data_session.has_data():
         return {"error": "Session not found or no data loaded"}
 
     # Use enhanced preview for better AI accessibility
-    preview_data = _create_data_preview_with_indices(session.df, 10)
+    preview_data = create_data_preview_with_indices(session.data_session.df, 10)
 
     return {
         "session_id": session_id,
-        "shape": session.df.shape,
+        "shape": session.data_session.df.shape,
         "preview": preview_data,
         "columns_info": {
-            "columns": session.df.columns.tolist(),
-            "dtypes": {col: str(dtype) for col, dtype in session.df.dtypes.items()},
+            "columns": session.data_session.df.columns.tolist(),
+            "dtypes": {col: str(dtype) for col, dtype in session.data_session.df.dtypes.items()},
         },
     }
 
@@ -88,14 +86,14 @@ async def get_csv_schema(session_id: str) -> dict[str, Any]:
     session_manager = get_session_manager()
     session = session_manager.get_session(session_id)
 
-    if not session or session.df is None:
+    if not session or not session.data_session.has_data():
         return {"error": "Session not found or no data loaded"}
 
     return {
         "session_id": session_id,
-        "columns": session.df.columns.tolist(),
-        "dtypes": {col: str(dtype) for col, dtype in session.df.dtypes.items()},
-        "shape": session.df.shape,
+        "columns": session.data_session.df.columns.tolist(),
+        "dtypes": {col: str(dtype) for col, dtype in session.data_session.df.dtypes.items()},
+        "shape": session.data_session.df.shape,
     }
 
 
@@ -141,10 +139,10 @@ async def get_csv_preview(session_id: str) -> dict[str, Any]:
     session_manager = get_session_manager()
     session = session_manager.get_session(session_id)
 
-    if not session or session.df is None:
+    if not session or not session.data_session.has_data():
         return {"error": "Session not found or no data loaded"}
 
-    preview_data = _create_data_preview_with_indices(session.df, 10)
+    preview_data = create_data_preview_with_indices(session.data_session.df, 10)
 
     return {
         "session_id": session_id,
@@ -215,10 +213,20 @@ def main() -> None:
 
     args = parser.parse_args()
 
-    # Set logging level
-    logging.getLogger().setLevel(getattr(logging, args.log_level))
+    # Setup structured logging
+    setup_structured_logging(args.log_level)
+    
+    # Set server-level correlation ID
+    server_correlation_id = set_correlation_id()
 
-    logger.info(f"Starting CSV Editor with {args.transport} transport")
+    logger.info(
+        f"Starting CSV Editor with {args.transport} transport",
+        transport=args.transport,
+        host=args.host if args.transport != "stdio" else None,
+        port=args.port if args.transport != "stdio" else None,
+        log_level=args.log_level,
+        server_id=server_correlation_id,
+    )
 
     # Run the server
     if args.transport == "stdio":

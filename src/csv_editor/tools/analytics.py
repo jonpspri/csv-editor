@@ -368,7 +368,7 @@ async def group_by_aggregate(
         }
 
         # Store grouped data in session
-        session.df = result_df
+        session.data_session.df = result_df
         session.record_operation(
             OperationType.GROUP_BY,
             {"group_by": group_by, "aggregations": aggregations, "result_shape": result["shape"]},

@@ -11,39 +11,12 @@ import pandas as pd
 
 from ..models import ExportFormat, OperationType, get_session_manager
 from ..utils.validators import validate_file_path, validate_url
+from .data_operations import create_data_preview_with_indices
 
 if TYPE_CHECKING:
     from fastmcp import Context
 
 
-def _create_data_preview_with_indices(df: pd.DataFrame, num_rows: int = 5) -> dict[str, Any]:
-    """Create a data preview with row indices for AI accessibility."""
-    preview_df = df.head(num_rows)
-
-    # Create records with row indices
-    preview_records = []
-    for _, (row_idx, row) in enumerate(preview_df.iterrows()):
-        record = {"__row_index__": int(row_idx)}  # Include original row index
-        record.update(row.to_dict())
-
-        # Handle pandas/numpy types for JSON serialization
-        for key, value in record.items():
-            if key == "__row_index__":
-                continue
-            if pd.isna(value):
-                record[key] = None
-            elif hasattr(value, "item"):
-                record[key] = value.item()
-
-        preview_records.append(record)
-
-    return {
-        "records": preview_records,
-        "total_rows": len(df),
-        "total_columns": len(df.columns),
-        "columns": df.columns.tolist(),
-        "preview_rows": len(preview_records),
-    }
 
 
 async def load_csv(
@@ -127,7 +100,7 @@ async def load_csv(
                 "shape": df.shape,
                 "dtypes": {col: str(dtype) for col, dtype in df.dtypes.items()},
                 "memory_usage_mb": df.memory_usage(deep=True).sum() / (1024 * 1024),
-                "preview": _create_data_preview_with_indices(df, 5),
+                "preview": create_data_preview_with_indices(df, 5),
             },
         }
 
@@ -194,7 +167,7 @@ async def load_csv_from_url(
             "data": {
                 "shape": df.shape,
                 "source_url": url,
-                "preview": _create_data_preview_with_indices(df, 5),
+                "preview": create_data_preview_with_indices(df, 5),
             },
         }
 

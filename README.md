@@ -16,10 +16,13 @@
 ## 🎯 Why CSV Editor?
 
 ### The Problem
+
 AI assistants struggle with complex data operations - they can read files but lack tools for filtering, transforming, analyzing, and validating CSV data efficiently.
 
 ### The Solution  
+
 CSV Editor bridges this gap by providing AI assistants with 40+ specialized tools for CSV operations, turning them into powerful data analysts that can:
+
 - Clean messy datasets in seconds
 - Perform complex statistical analysis
 - Validate data quality automatically
@@ -27,6 +30,7 @@ CSV Editor bridges this gap by providing AI assistants with 40+ specialized tool
 - Track all changes with undo/redo capabilities
 
 ### Key Differentiators
+
 | Feature | CSV Editor | Traditional Tools |
 |---------|-----------|------------------|
 | **AI Integration** | Native MCP protocol | Manual operations |
@@ -92,6 +96,7 @@ Add to `~/Library/Application Support/Claude/claude_desktop_config.json` (macOS)
   }
 }
 ```
+
 </details>
 
 <details>
@@ -104,6 +109,7 @@ See [MCP_CONFIG.md](MCP_CONFIG.md) for detailed configuration.
 ## 💡 Real-World Use Cases
 
 ### 📊 Data Analyst Workflow
+
 ```python
 # Morning: Load yesterday's data
 session = load_csv("daily_sales.csv")
@@ -123,6 +129,7 @@ export_csv(format="excel", file_path="clean_sales.xlsx")
 ```
 
 ### 🏭 ETL Pipeline
+
 ```python
 # Extract from multiple sources
 load_csv_from_url("https://api.example.com/data.csv")
@@ -144,6 +151,7 @@ export_csv(format="json")     # For API
 ```
 
 ### 🔍 Data Quality Assurance
+
 ```python
 # Validate incoming data
 validate_schema(schema={
@@ -163,24 +171,28 @@ anomalies = find_anomalies(methods=["statistical", "pattern"])
 ## 🎨 Core Features
 
 ### Data Operations
+
 - **Load & Export**: CSV, JSON, Excel, Parquet, HTML, Markdown
 - **Transform**: Filter, sort, group, pivot, join
 - **Clean**: Remove duplicates, handle missing values, fix types
 - **Calculate**: Add computed columns, aggregations
 
 ### Analysis Tools  
+
 - **Statistics**: Descriptive stats, correlations, distributions
 - **Outliers**: IQR, Z-score, custom thresholds
 - **Profiling**: Complete data quality reports
 - **Validation**: Schema checking, quality scoring
 
 ### Productivity Features
+
 - **Auto-Save**: Never lose work with configurable strategies
 - **History**: Full undo/redo with operation tracking
 - **Sessions**: Multi-user support with isolation
 - **Performance**: Stream processing for large files
 
 ### Advanced Compatibility
+
 - **Null Value Support**: Full support for JSON `null` → Python `None` → pandas `NaN`
 - **Claude Code Compatible**: Handles JSON string serialization automatically
 - **Type Safety**: Improved type annotations with `CellValue`, `RowData`, `FilterCondition`
@@ -192,6 +204,7 @@ anomalies = find_anomalies(methods=["statistical", "pattern"])
 <summary><b>Complete Tool List</b> (40+ tools)</summary>
 
 ### I/O Operations
+
 - `load_csv` - Load from file
 - `load_csv_from_url` - Load from URL
 - `load_csv_from_content` - Load from string
@@ -201,6 +214,7 @@ anomalies = find_anomalies(methods=["statistical", "pattern"])
 - `close_session` - Cleanup
 
 ### Data Manipulation
+
 - `filter_rows` - Complex filtering
 - `sort_data` - Multi-column sort
 - `select_columns` - Column selection
@@ -213,6 +227,7 @@ anomalies = find_anomalies(methods=["statistical", "pattern"])
 - `remove_duplicates` - Deduplicate
 
 ### Analysis
+
 - `get_statistics` - Statistical summary
 - `get_column_statistics` - Column stats
 - `get_correlation_matrix` - Correlations
@@ -222,11 +237,13 @@ anomalies = find_anomalies(methods=["statistical", "pattern"])
 - `profile_data` - Data profiling
 
 ### Validation
+
 - `validate_schema` - Schema validation
 - `check_data_quality` - Quality metrics
 - `find_anomalies` - Anomaly detection
 
 ### Auto-Save & History
+
 - `configure_auto_save` - Setup auto-save
 - `get_auto_save_status` - Check status
 - `undo` / `redo` - Navigate history
@@ -270,6 +287,7 @@ configure_auto_save(
 <summary><b>Alternative Installation Methods</b></summary>
 
 ### Using pip
+
 ```bash
 git clone https://github.com/santoshray02/csv-editor.git
 cd csv-editor
@@ -277,11 +295,13 @@ pip install -e .
 ```
 
 ### Using pipx (Global)
+
 ```bash
 pipx install git+https://github.com/santoshray02/csv-editor.git
 ```
 
 ### From GitHub (Recommended)
+
 ```bash
 # Install latest version
 pip install git+https://github.com/santoshray02/csv-editor.git
@@ -298,6 +318,7 @@ pip install git+https://github.com/santoshray02/csv-editor.git@v1.0.1
 ## 🧪 Development
 
 ### Running Tests
+
 ```bash
 uv run test           # Run tests
 uv run test-cov       # With coverage
@@ -305,6 +326,7 @@ uv run all-checks     # Format, lint, type-check, test
 ```
 
 ### Project Structure
+
 ```
 csv-editor/
 ├── src/csv_editor/   # Core implementation
@@ -321,6 +343,7 @@ csv-editor/
 We welcome contributions! See [CONTRIBUTING.md](CONTRIBUTING.md) for guidelines.
 
 ### Quick Contribution Guide
+
 1. Fork the repository
 2. Create a feature branch
 3. Make your changes with tests
@@ -351,6 +374,7 @@ MIT License - see [LICENSE](LICENSE) file
 ## 💎 Advanced Features
 
 ### Null Value Handling
+
 Full support for null values across all operations:
 
 ```python
@@ -370,6 +394,7 @@ filter_rows(session_id, [{"column": "email", "operator": "is_null"}])
 ```
 
 ### Claude Code Compatibility
+
 Automatically handles Claude Code's JSON string serialization:
 
 ```javascript
@@ -385,6 +410,7 @@ Automatically handles Claude Code's JSON string serialization:
 ```
 
 Built with:
+
 - [FastMCP](https://github.com/jlowin/fastmcp) - Fast Model Context Protocol
 - [Pandas](https://pandas.pydata.org/) - Data manipulation
 - [NumPy](https://numpy.org/) - Numerical computing
