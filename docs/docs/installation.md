@@ -21,7 +21,7 @@ The fastest way to install and run CSV Editor:
 
 ```bash
 # Install and run directly from GitHub
-uvx --from git+https://github.com/santoshray02/csv-editor.git csv-editor
+uvx --from git+https://github.com/jonpspri/csv-editor.git csv-editor
 ```
 
 ### Using uv
@@ -34,7 +34,7 @@ curl -LsSf https://astral.sh/uv/install.sh | sh
 # Or on Windows: powershell -c "irm https://astral.sh/uv/install.ps1 | iex"
 
 # Clone and install
-git clone https://github.com/santoshray02/csv-editor.git
+git clone https://github.com/jonpspri/csv-editor.git
 cd csv-editor
 uv sync
 
@@ -46,7 +46,7 @@ uv run csv-editor
 
 ```bash
 # Install directly from GitHub
-pip install git+https://github.com/santoshray02/csv-editor.git
+pip install git+https://github.com/jonpspri/csv-editor.git
 
 # Run the server
 csv-editor
@@ -65,7 +65,7 @@ Add this to your MCP Settings file (Claude → Settings → Developer → Show M
   "mcpServers": {
     "csv-editor": {
       "command": "uvx",
-      "args": ["--from", "git+https://github.com/santoshray02/csv-editor.git", "csv-editor"],
+      "args": ["--from", "git+https://github.com/jonpspri/csv-editor.git", "csv-editor"],
       "env": {
         "CSV_EDITOR_MAX_FILE_SIZE_MB": "1024",
         "CSV_EDITOR_CSV_HISTORY_DIR": "/tmp/csv_history"
@@ -84,7 +84,7 @@ Edit `~/.continue/config.json`:
   "mcpServers": {
     "csv-editor": {
       "command": "uvx",
-      "args": ["--from", "git+https://github.com/santoshray02/csv-editor.git", "csv-editor"]
+      "args": ["--from", "git+https://github.com/jonpspri/csv-editor.git", "csv-editor"]
     }
   }
 }
@@ -99,7 +99,7 @@ Add to VS Code settings (`settings.json`):
   "cline.mcpServers": {
     "csv-editor": {
       "command": "uvx", 
-      "args": ["--from", "git+https://github.com/santoshray02/csv-editor.git", "csv-editor"]
+      "args": ["--from", "git+https://github.com/jonpspri/csv-editor.git", "csv-editor"]
     }
   }
 }
@@ -114,7 +114,7 @@ Edit `~/.windsurf/mcp_servers.json`:
   "mcpServers": {
     "csv-editor": {
       "command": "uvx",
-      "args": ["--from", "git+https://github.com/santoshray02/csv-editor.git", "csv-editor"]
+      "args": ["--from", "git+https://github.com/jonpspri/csv-editor.git", "csv-editor"]
     }
   }
 }
@@ -129,7 +129,7 @@ Edit `~/.config/zed/settings.json`:
   "experimental.mcp_servers": {
     "csv-editor": {
       "command": "uvx",
-      "args": ["--from", "git+https://github.com/santoshray02/csv-editor.git", "csv-editor"]
+      "args": ["--from", "git+https://github.com/jonpspri/csv-editor.git", "csv-editor"]
     }
   }
 }
@@ -166,7 +166,7 @@ CSV_EDITOR_LOG_LEVEL=DEBUG uv run csv-editor
 npm install -g @modelcontextprotocol/inspector
 
 # Test the server
-mcp-inspector uvx --from git+https://github.com/santoshray02/csv-editor.git csv-editor
+mcp-inspector uvx --from git+https://github.com/jonpspri/csv-editor.git csv-editor
 ```
 
 ### Verify in Your AI Client
@@ -181,7 +181,7 @@ mcp-inspector uvx --from git+https://github.com/santoshray02/csv-editor.git csv-
 
 #### Server not starting
 - Check Python version: `python --version` (must be 3.10+)
-- Verify installation: `uvx --from git+https://github.com/santoshray02/csv-editor.git csv-editor --version`
+- Verify installation: `uvx --from git+https://github.com/jonpspri/csv-editor.git csv-editor --version`
 - Check logs with debug level
 
 #### Client can't connect
@@ -203,8 +203,8 @@ mcp-inspector uvx --from git+https://github.com/santoshray02/csv-editor.git csv-
 
 ### Getting Help
 
-- **[GitHub Issues](https://github.com/santoshray02/csv-editor/issues)** - Report bugs
-- **[GitHub Discussions](https://github.com/santoshray02/csv-editor/discussions)** - Ask questions
+- **[GitHub Issues](https://github.com/jonpspri/csv-editor/issues)** - Report bugs
+- **[GitHub Discussions](https://github.com/jonpspri/csv-editor/discussions)** - Ask questions
 - **[Documentation](/)** - Browse complete docs
 
 ## Next Steps
@@ -213,7 +213,7 @@ Now that CSV Editor is installed:
 
 1. **[Quick Start Tutorial](./tutorials/quickstart)** - Learn the basics
 2. **[API Reference](./api/overview)** - Explore all available tools
-3. **[Examples](https://github.com/santoshray02/csv-editor/tree/main/examples)** - See real-world use cases
+3. **[Examples](https://github.com/jonpspri/csv-editor/tree/main/examples)** - See real-world use cases
 
 ---
 

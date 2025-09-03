@@ -154,8 +154,8 @@ Use undo/redo freely to experiment with different approaches
 ## Next Steps
 
 - **[API Reference](../api/overview)** - Complete tool documentation
-- **[Examples](https://github.com/santoshray02/csv-editor/tree/main/examples)** - More real-world scenarios
-- **[GitHub Repository](https://github.com/santoshray02/csv-editor)** - Source code and community
+- **[Examples](https://github.com/jonpspri/csv-editor/tree/main/examples)** - More real-world scenarios
+- **[GitHub Repository](https://github.com/jonpspri/csv-editor)** - Source code and community
 
 ---
 

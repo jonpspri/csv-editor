@@ -1,7 +1,6 @@
 ---
 sidebar_position: 1
 title: Introduction
-slug: /
 ---
 
 # CSV Editor
@@ -85,9 +84,9 @@ Ready to supercharge your AI's data capabilities?
 
 ## Community & Support
 
-- **[GitHub Repository](https://github.com/santoshray02/csv-editor)** - Source code and releases
-- **[GitHub Discussions](https://github.com/santoshray02/csv-editor/discussions)** - Ask questions and share ideas
-- **[Report Issues](https://github.com/santoshray02/csv-editor/issues)** - Bug reports and feature requests
+- **[GitHub Repository](https://github.com/jonpspri/csv-editor)** - Source code and releases
+- **[GitHub Discussions](https://github.com/jonpspri/csv-editor/discussions)** - Ask questions and share ideas
+- **[Report Issues](https://github.com/jonpspri/csv-editor/issues)** - Bug reports and feature requests
 
 ---
 
