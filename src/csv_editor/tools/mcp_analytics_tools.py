@@ -4,7 +4,7 @@ from __future__ import annotations
 
 from typing import Any, Literal
 
-from fastmcp import Context
+from fastmcp import Context  # noqa: TC002
 
 from .analytics import (
     detect_outliers as _detect_outliers,

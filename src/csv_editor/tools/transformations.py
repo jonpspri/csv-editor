@@ -7,12 +7,6 @@ from typing import TYPE_CHECKING, Any, Literal
 
 import pandas as pd
 
-# Type aliases for better type safety
-CellValue = str | int | float | bool | None
-RowData = dict[str, CellValue] | list[CellValue]
-OperationResult = dict[str, Any]  # Operation results have complex mixed types
-FilterCondition = dict[str, str | CellValue]  # For filter condition dicts
-
 from ..exceptions import (
     ColumnNotFoundError,
     InvalidParameterError,
@@ -22,6 +16,12 @@ from ..exceptions import (
 from ..models.csv_session import get_session_manager
 from ..models.data_models import OperationType
 from .data_operations import create_data_preview_with_indices
+
+# Type aliases for better type safety
+CellValue = str | int | float | bool | None
+RowData = dict[str, CellValue] | list[CellValue]
+OperationResult = dict[str, Any]  # Operation results have complex mixed types
+FilterCondition = dict[str, str | CellValue]  # For filter condition dicts
 
 if TYPE_CHECKING:
     from fastmcp import Context

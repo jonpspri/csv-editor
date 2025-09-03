@@ -5,11 +5,11 @@ from __future__ import annotations
 from enum import Enum
 from typing import TYPE_CHECKING, Any, Literal
 
+from pydantic import BaseModel, Field, field_validator
+
 # Type aliases for common data types
 CellValue = str | int | float | bool | None
 FilterValue = CellValue | list[CellValue]
-
-from pydantic import BaseModel, Field, field_validator
 
 if TYPE_CHECKING:
     from datetime import datetime

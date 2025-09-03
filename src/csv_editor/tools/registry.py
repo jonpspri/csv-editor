@@ -146,7 +146,7 @@ def with_error_handling(func: ToolFunction) -> ToolFunction:
     return wrapper
 
 
-def register_tools_from_module(mcp: Any, module: Any, category: str) -> None:
+def register_tools_from_module(module: Any, category: str) -> None:
     """Register all tools from a module with the given category."""
     registry = get_tool_registry()
 

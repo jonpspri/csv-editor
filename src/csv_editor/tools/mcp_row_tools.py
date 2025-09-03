@@ -4,7 +4,7 @@ from __future__ import annotations
 
 from typing import Any
 
-from fastmcp import Context
+from fastmcp import Context  # noqa: TC002
 
 from .transformations import (
     delete_row as _delete_row,
