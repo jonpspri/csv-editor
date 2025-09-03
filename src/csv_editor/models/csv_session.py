@@ -27,6 +27,10 @@ class CSVSettings(BaseSettings):
     """Configuration settings for CSV Editor sessions."""
 
     csv_history_dir: str = "."  # Default to current directory
+    max_file_size_mb: int = 1024  # Default to 1024 MB
+    session_timeout: int = 3600  # Default to 3600 seconds
+    chunk_size: int = 10000  # Default to 10000 rows
+    auto_save: bool = True  # Default to enabled
 
     model_config = {"env_prefix": "CSV_EDITOR_", "case_sensitive": False}
 

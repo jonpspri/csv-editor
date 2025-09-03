@@ -8,6 +8,7 @@ from typing import Any
 from fastmcp import Context  # noqa: TC002
 
 from ..models import get_session_manager
+from ..models.csv_session import get_csv_settings
 from .registry import tool, with_error_handling
 
 
@@ -86,8 +87,8 @@ async def get_server_info(ctx: Context) -> dict[str, Any]:
             ],
         },
         "supported_formats": ["csv", "tsv", "json", "excel", "parquet", "html", "markdown"],
-        "max_file_size_mb": int(os.getenv("CSV_MAX_FILE_SIZE", "1024")),
-        "session_timeout_minutes": int(os.getenv("CSV_SESSION_TIMEOUT", "60")),
+        "max_file_size_mb": get_csv_settings().max_file_size_mb,
+        "session_timeout_minutes": get_csv_settings().session_timeout // 60,
     }
 
 

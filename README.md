@@ -83,6 +83,7 @@ uv run csv-editor
 
 Add to `~/Library/Application Support/Claude/claude_desktop_config.json` (macOS):
 
+### Local Installation
 ```json
 {
   "mcpServers": {
@@ -90,7 +91,24 @@ Add to `~/Library/Application Support/Claude/claude_desktop_config.json` (macOS)
       "command": "uv",
       "args": ["tool", "run", "csv-editor"],
       "env": {
-        "CSV_MAX_FILE_SIZE": "1073741824"
+        "CSV_EDITOR_MAX_FILE_SIZE_MB": "1024",
+        "CSV_EDITOR_CSV_HISTORY_DIR": "./csv_history"
+      }
+    }
+  }
+}
+```
+
+### Direct from Git
+```json
+{
+  "mcpServers": {
+    "csv-editor": {
+      "command": "uvx",
+      "args": ["--from", "git+https://github.com/jonpspri/csv-editor.git", "csv-editor"],
+      "env": {
+        "CSV_EDITOR_MAX_FILE_SIZE_MB": "1024",
+        "CSV_EDITOR_CSV_HISTORY_DIR": "./csv_history"
       }
     }
   }
@@ -258,10 +276,11 @@ anomalies = find_anomalies(methods=["statistical", "pattern"])
 
 | Variable | Default | Description |
 |----------|---------|-------------|
-| `CSV_MAX_FILE_SIZE` | 1GB | Maximum file size |
-| `CSV_SESSION_TIMEOUT` | 3600s | Session timeout |
-| `CSV_CHUNK_SIZE` | 10000 | Processing chunk size |
-| `CSV_AUTO_SAVE` | true | Enable auto-save |
+| `CSV_EDITOR_MAX_FILE_SIZE_MB` | 1024 | Maximum file size in MB |
+| `CSV_EDITOR_CSV_HISTORY_DIR` | "." | History directory path |
+| `CSV_EDITOR_SESSION_TIMEOUT` | 3600 | Session timeout in seconds |
+| `CSV_EDITOR_CHUNK_SIZE` | 10000 | Processing chunk size |
+| `CSV_EDITOR_AUTO_SAVE` | true | Enable auto-save |
 
 ### Auto-Save Strategies
 
