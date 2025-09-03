@@ -1,17 +1,8 @@
 # CSV Editor - AI-Powered CSV Processing via MCP
 
-[![Python](https://img.shields.io/badge/Python-3.8%2B-blue)](https://www.python.org/)
-[![MCP](https://img.shields.io/badge/MCP-Compatible-green)](https://modelcontextprotocol.io/)
-[![License](https://img.shields.io/badge/License-MIT-yellow)](LICENSE)
-[![FastMCP](https://img.shields.io/badge/Built%20with-FastMCP-purple)](https://github.com/jlowin/fastmcp)
-[![Pandas](https://img.shields.io/badge/Powered%20by-Pandas-150458)](https://pandas.pydata.org/)
-[![smithery badge](https://smithery.ai/badge/@santoshray02/csv-editor)](https://smithery.ai/server/@santoshray02/csv-editor)
-
-**Transform how AI assistants work with CSV data.** CSV Editor is a high-performance MCP server that gives Claude, ChatGPT, and other AI assistants powerful data manipulation capabilities through simple commands.
-
-<a href="https://glama.ai/mcp/servers/@santoshray02/csv-editor">
-  <img width="380" height="200" src="https://glama.ai/mcp/servers/@santoshray02/csv-editor/badge" alt="CSV Editor MCP server" />
-</a>
+**Transform how AI assistants work with CSV data.** CSV Editor is a
+high-performance MCP server that gives Claude, ChatGPT, and other AI assistants
+powerful data manipulation capabilities through simple commands.
 
 ## 🎯 Why CSV Editor?
 
@@ -19,7 +10,7 @@
 
 AI assistants struggle with complex data operations - they can read files but lack tools for filtering, transforming, analyzing, and validating CSV data efficiently.
 
-### The Solution  
+### The Solution
 
 CSV Editor bridges this gap by providing AI assistants with 40+ specialized tools for CSV operations, turning them into powerful data analysts that can:
 
@@ -45,7 +36,7 @@ CSV Editor bridges this gap by providing AI assistants with 40+ specialized tool
 ```python
 # Your AI assistant can now do this:
 "Load the sales data and remove duplicates"
-"Filter for Q4 2024 transactions over $10,000"  
+"Filter for Q4 2024 transactions over $10,000"
 "Calculate correlation between price and quantity"
 "Fill missing values with the median"
 "Export as Excel with the analysis"
@@ -53,53 +44,14 @@ CSV Editor bridges this gap by providing AI assistants with 40+ specialized tool
 # All with automatic history tracking and undo capability!
 ```
 
-## 🚀 Quick Start (2 minutes)
-
-### Installing via Smithery
-
-To install csv-editor for Claude Desktop automatically via [Smithery](https://smithery.ai/server/@santoshray02/csv-editor):
-
-```bash
-npx -y @smithery/cli install @santoshray02/csv-editor --client claude
-```
-
-### Fastest Installation (Recommended)
-
-```bash
-# Install uv if needed (one-time setup)
-curl -LsSf https://astral.sh/uv/install.sh | sh
-
-# Clone and run
-git clone https://github.com/santoshray02/csv-editor.git
-cd csv-editor
-uv sync
-uv run csv-editor
-```
-
-### Configure Your AI Assistant
+## Configure Your AI Assistant
 
 <details>
 <summary><b>Claude Desktop</b> (Click to expand)</summary>
 
-Add to `~/Library/Application Support/Claude/claude_desktop_config.json` (macOS):
+Add to the MCP Settings file
+( Claude -> Settings -> Developer -> Show MCP Settings --> `claude_mcp_settings.json` ):
 
-### Local Installation
-```json
-{
-  "mcpServers": {
-    "csv-editor": {
-      "command": "uv",
-      "args": ["tool", "run", "csv-editor"],
-      "env": {
-        "CSV_EDITOR_MAX_FILE_SIZE_MB": "1024",
-        "CSV_EDITOR_CSV_HISTORY_DIR": "./csv_history"
-      }
-    }
-  }
-}
-```
-
-### Direct from Git
 ```json
 {
   "mcpServers": {
@@ -108,7 +60,7 @@ Add to `~/Library/Application Support/Claude/claude_desktop_config.json` (macOS)
       "args": ["--from", "git+https://github.com/jonpspri/csv-editor.git", "csv-editor"],
       "env": {
         "CSV_EDITOR_MAX_FILE_SIZE_MB": "1024",
-        "CSV_EDITOR_CSV_HISTORY_DIR": "./csv_history"
+        "CSV_EDITOR_CSV_HISTORY_DIR": "/tmp/csv_history"
       }
     }
   }
@@ -120,7 +72,57 @@ Add to `~/Library/Application Support/Claude/claude_desktop_config.json` (macOS)
 <details>
 <summary><b>Other Clients</b> (Continue, Cline, Windsurf, Zed)</summary>
 
-See [MCP_CONFIG.md](MCP_CONFIG.md) for detailed configuration.
+### Continue (VS Code)
+Edit `~/.continue/config.json`:
+```json
+{
+  "mcpServers": {
+    "csv-editor": {
+      "command": "uvx",
+      "args": ["--from", "git+https://github.com/jonpspri/csv-editor.git", "csv-editor"]
+    }
+  }
+}
+```
+
+### Cline
+Add to VS Code settings (`settings.json`):
+```json
+{
+  "cline.mcpServers": {
+    "csv-editor": {
+      "command": "uvx", 
+      "args": ["--from", "git+https://github.com/jonpspri/csv-editor.git", "csv-editor"]
+    }
+  }
+}
+```
+
+### Windsurf
+Edit `~/.windsurf/mcp_servers.json`:
+```json
+{
+  "mcpServers": {
+    "csv-editor": {
+      "command": "uvx",
+      "args": ["--from", "git+https://github.com/jonpspri/csv-editor.git", "csv-editor"]
+    }
+  }
+}
+```
+
+### Zed Editor
+Edit `~/.config/zed/settings.json`:
+```json
+{
+  "experimental.mcp_servers": {
+    "csv-editor": {
+      "command": "uvx",
+      "args": ["--from", "git+https://github.com/jonpspri/csv-editor.git", "csv-editor"]
+    }
+  }
+}
+```
 
 </details>
 
@@ -195,7 +197,7 @@ anomalies = find_anomalies(methods=["statistical", "pattern"])
 - **Clean**: Remove duplicates, handle missing values, fix types
 - **Calculate**: Add computed columns, aggregations
 
-### Analysis Tools  
+### Analysis Tools
 
 - **Statistics**: Descriptive stats, correlations, distributions
 - **Outliers**: IQR, Z-score, custom thresholds
@@ -399,7 +401,7 @@ Full support for null values across all operations:
 ```python
 # Insert rows with null values
 insert_row(session_id, -1, {
-    "name": "John Doe", 
+    "name": "John Doe",
     "email": null,           # JSON null becomes Python None
     "phone": null,
     "notes": "Contact pending"
@@ -408,7 +410,7 @@ insert_row(session_id, -1, {
 # Update cells to null
 set_cell_value(session_id, 0, "email", null)
 
-# Filter for null values  
+# Filter for null values
 filter_rows(session_id, [{"column": "email", "operator": "is_null"}])
 ```
 

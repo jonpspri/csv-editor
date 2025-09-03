@@ -9,6 +9,7 @@ from fastmcp import Context  # noqa: TC002
 
 from ..models import get_session_manager
 from ..models.csv_session import get_csv_settings
+from .._version import __version__
 from .registry import tool, with_error_handling
 
 
@@ -26,7 +27,7 @@ async def health_check(ctx: Context) -> dict[str, Any]:
     return {
         "success": True,
         "status": "healthy",
-        "version": "1.0.0",
+        "version": __version__,
         "active_sessions": active_sessions,
         "max_sessions": session_manager.max_sessions,
         "session_ttl_minutes": session_manager.ttl_minutes,
@@ -42,7 +43,7 @@ async def get_server_info(ctx: Context) -> dict[str, Any]:
 
     return {
         "name": "CSV Editor",
-        "version": "1.0.0",
+        "version": __version__,
         "description": "A comprehensive MCP server for CSV file operations and data analysis",
         "capabilities": {
             "data_io": [

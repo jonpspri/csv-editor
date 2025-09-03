@@ -1,6 +1,6 @@
 {
   "name": "@santoshray02/csv-editor",
-  "version": "1.0.0",
+  "version": "1.0.2",
   "description": "MCP server for comprehensive CSV file operations",
   "keywords": [
     "mcp",
@@ -35,7 +35,10 @@
   "mcp": {
     "serverType": "python",
     "command": "python",
-    "args": ["-m", "csv_editor.server"],
+    "args": [
+      "-m",
+      "csv_editor.server"
+    ],
     "env": {},
     "capabilities": {
       "tools": true,
