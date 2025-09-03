@@ -39,10 +39,10 @@ async def get_statistics(
         manager = get_session_manager()
         session = manager.get_session(session_id)
 
-        if not session or session.df is None:
+        if not session or not session.data_session.has_data():
             return {"success": False, "error": "Invalid session or no data loaded"}
 
-        df = session.df
+        df = session.data_session.df
 
         # Select columns to analyze
         if columns:
@@ -117,10 +117,10 @@ async def get_column_statistics(
         manager = get_session_manager()
         session = manager.get_session(session_id)
 
-        if not session or session.df is None:
+        if not session or not session.data_session.has_data():
             return {"success": False, "error": "Invalid session or no data loaded"}
 
-        df = session.df
+        df = session.data_session.df
 
         if column not in df.columns:
             return {"success": False, "error": f"Column '{column}' not found"}
@@ -226,10 +226,10 @@ async def get_correlation_matrix(
         manager = get_session_manager()
         session = manager.get_session(session_id)
 
-        if not session or session.df is None:
+        if not session or not session.data_session.has_data():
             return {"success": False, "error": "Invalid session or no data loaded"}
 
-        df = session.df
+        df = session.data_session.df
 
         # Select columns
         if columns:
@@ -325,10 +325,10 @@ async def group_by_aggregate(
         manager = get_session_manager()
         session = manager.get_session(session_id)
 
-        if not session or session.df is None:
+        if not session or not session.data_session.has_data():
             return {"success": False, "error": "Invalid session or no data loaded"}
 
-        df = session.df
+        df = session.data_session.df
 
         # Validate group by columns
         missing_cols = [col for col in group_by if col not in df.columns]
@@ -414,10 +414,10 @@ async def get_value_counts(
         manager = get_session_manager()
         session = manager.get_session(session_id)
 
-        if not session or session.df is None:
+        if not session or not session.data_session.has_data():
             return {"success": False, "error": "Invalid session or no data loaded"}
 
-        df = session.df
+        df = session.data_session.df
 
         if column not in df.columns:
             return {"success": False, "error": f"Column '{column}' not found"}
@@ -494,10 +494,10 @@ async def detect_outliers(
         manager = get_session_manager()
         session = manager.get_session(session_id)
 
-        if not session or session.df is None:
+        if not session or not session.data_session.has_data():
             return {"success": False, "error": "Invalid session or no data loaded"}
 
-        df = session.df
+        df = session.data_session.df
 
         # Select numeric columns
         if columns:
@@ -607,10 +607,10 @@ async def profile_data(
         manager = get_session_manager()
         session = manager.get_session(session_id)
 
-        if not session or session.df is None:
+        if not session or not session.data_session.has_data():
             return {"success": False, "error": "Invalid session or no data loaded"}
 
-        df = session.df
+        df = session.data_session.df
 
         profile = {
             "summary": {

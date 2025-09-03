@@ -252,7 +252,7 @@ async def export_csv(
         session_manager = get_session_manager()
         session = session_manager.get_session(session_id)
 
-        if not session or session.df is None:
+        if not session or session.data_session.df is None:
             return {
                 "success": False,
                 "message": "Session not found or no data loaded",
@@ -282,7 +282,7 @@ async def export_csv(
             file_path = tempfile.gettempdir() + "/" + filename + extensions[format]
 
         path_obj = Path(file_path)
-        df = session.df
+        df = session.data_session.df
 
         if ctx:
             await ctx.report_progress(0.5)
