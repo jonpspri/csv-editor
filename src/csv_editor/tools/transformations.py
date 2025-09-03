@@ -1961,7 +1961,7 @@ async def get_data_summary(
 
         # Add preview if requested
         if include_preview:
-            summary["preview"] = _create_data_preview_with_indices(df, max_preview_rows)
+            summary["preview"] = create_data_preview_with_indices(df, max_preview_rows)
 
         return summary
 

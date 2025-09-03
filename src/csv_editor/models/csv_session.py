@@ -222,7 +222,7 @@ class CSVSession:
             self.auto_save_manager = AutoSaveManager(
                 self.session_id,
                 self.auto_save_config,
-                self.file_path,  # Pass the original file path
+                self.data_session.file_path,  # Pass the original file path
             )
 
             # Start periodic save if needed
