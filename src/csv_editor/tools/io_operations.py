@@ -219,7 +219,7 @@ async def load_csv_from_content(
             "session_id": session.session_id,
             "rows_affected": len(df),
             "columns_affected": df.columns.tolist(),
-            "data": {"shape": df.shape, "preview": _create_data_preview_with_indices(df, 5)},
+            "data": {"shape": df.shape, "preview": create_data_preview_with_indices(df, 5)},
         }
 
     except Exception as e:
