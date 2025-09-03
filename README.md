@@ -310,7 +310,7 @@ configure_auto_save(
 ### Using pip
 
 ```bash
-git clone https://github.com/santoshray02/csv-editor.git
+git clone https://github.com/jonpspri/csv-editor.git
 cd csv-editor
 pip install -e .
 ```
@@ -318,20 +318,20 @@ pip install -e .
 ### Using pipx (Global)
 
 ```bash
-pipx install git+https://github.com/santoshray02/csv-editor.git
+pipx install git+https://github.com/jonpspri/csv-editor.git
 ```
 
 ### From GitHub (Recommended)
 
 ```bash
 # Install latest version
-pip install git+https://github.com/santoshray02/csv-editor.git
+pip install git+https://github.com/jonpspri/csv-editor.git
 
 # Or using uv
-uv pip install git+https://github.com/santoshray02/csv-editor.git
+uv pip install git+https://github.com/jonpspri/csv-editor.git
 
 # Install specific version
-pip install git+https://github.com/santoshray02/csv-editor.git@v1.0.1
+pip install git+https://github.com/jonpspri/csv-editor.git@v1.0.1
 ```
 
 </details>
@@ -382,9 +382,9 @@ We welcome contributions! See [CONTRIBUTING.md](CONTRIBUTING.md) for guidelines.
 
 ## 💬 Support
 
-- **Issues**: [GitHub Issues](https://github.com/santoshray02/csv-editor/issues)
-- **Discussions**: [GitHub Discussions](https://github.com/santoshray02/csv-editor/discussions)
-- **Documentation**: [Wiki](https://github.com/santoshray02/csv-editor/wiki)
+- **Issues**: [GitHub Issues](https://github.com/jonpspri/csv-editor/issues)
+- **Discussions**: [GitHub Discussions](https://github.com/jonpspri/csv-editor/discussions)
+- **Documentation**: [Wiki](https://github.com/jonpspri/csv-editor/wiki)
 
 ## 📄 License
 

@@ -110,12 +110,12 @@ all = [
 ]
 
 [project.urls]
-Homepage = "https://github.com/santoshray02/csv-editor"
-Documentation = "https://github.com/santoshray02/csv-editor#readme"
-Repository = "https://github.com/santoshray02/csv-editor"
-Issues = "https://github.com/santoshray02/csv-editor/issues"
-Changelog = "https://github.com/santoshray02/csv-editor/blob/main/CHANGELOG.md"
-"Release Notes" = "https://github.com/santoshray02/csv-editor/releases"
+Homepage = "https://github.com/jonpspri/csv-editor"
+Documentation = "https://github.com/jonpspri/csv-editor#readme"
+Repository = "https://github.com/jonpspri/csv-editor"
+Issues = "https://github.com/jonpspri/csv-editor/issues"
+Changelog = "https://github.com/jonpspri/csv-editor/blob/main/CHANGELOG.md"
+"Release Notes" = "https://github.com/jonpspri/csv-editor/releases"
 
 [project.scripts]
 csv-editor = "csv_editor.server:main"
@@ -325,7 +325,7 @@ pretty_print = true
 site_name = "CSV Editor"
 site_description = "Comprehensive CSV manipulation and analysis via Model Context Protocol"
 site_author = "Santosh Ray"
-repo_url = "https://github.com/santoshray02/csv-editor"
+repo_url = "https://github.com/jonpspri/csv-editor"
 repo_name = "csv-editor"
 
 [dependency-groups]

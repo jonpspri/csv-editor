@@ -29,12 +29,12 @@ By participating in this project, you agree to abide by our Code of Conduct:
 1. **Fork the repository** on GitHub
 2. **Clone your fork** locally:
    ```bash
-   git clone https://github.com/santoshray02/csv-editor.git
+   git clone https://github.com/jonpspri/csv-editor.git
    cd csv-editor
    ```
 3. **Add upstream remote**:
    ```bash
-   git remote add upstream https://github.com/santoshray02/csv-editor.git
+   git remote add upstream https://github.com/jonpspri/csv-editor.git
    ```
 
 ## Development Setup
