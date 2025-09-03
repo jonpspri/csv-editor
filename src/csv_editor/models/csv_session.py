@@ -366,7 +366,9 @@ class CSVSession:
                 return {
                     "success": True,
                     "message": f"Restored to operation {operation_id}",
-                    "shape": self.data_session.df.shape if self.data_session.df is not None else (0, 0),
+                    "shape": (
+                        self.data_session.df.shape if self.data_session.df is not None else (0, 0)
+                    ),
                 }
             else:
                 return {"success": False, "error": f"Could not restore to operation {operation_id}"}

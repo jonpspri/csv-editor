@@ -75,7 +75,7 @@ async def filter_rows(
             value = condition.get("value")
 
             if column is None or column not in df.columns:
-                raise ColumnNotFoundError(str(column or 'None'), df.columns.tolist())
+                raise ColumnNotFoundError(str(column or "None"), df.columns.tolist())
 
             col_data = df[column]
 
@@ -1818,7 +1818,7 @@ async def inspect_data_around(
         # Convert to records with row indices
         records = []
         for _, (orig_idx, row_data) in enumerate(data_slice.iterrows()):
-            # Handle different index types from iterrows safely  
+            # Handle different index types from iterrows safely
             row_index_val = orig_idx if isinstance(orig_idx, int) else 0
             record = {"__row_index__": row_index_val}
             record.update(row_data.to_dict())
