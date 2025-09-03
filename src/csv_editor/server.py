@@ -66,15 +66,18 @@ async def get_csv_data(session_id: str) -> dict[str, Any]:
         return {"error": "Session not found or no data loaded"}
 
     # Use enhanced preview for better AI accessibility
-    preview_data = create_data_preview_with_indices(session.data_session.df, 10)
+    df = session.data_session.df
+    assert df is not None  # Type guard since has_data() returned True
+    
+    preview_data = create_data_preview_with_indices(df, 10)
 
     return {
         "session_id": session_id,
-        "shape": session.data_session.df.shape,
+        "shape": df.shape,
         "preview": preview_data,
         "columns_info": {
-            "columns": session.data_session.df.columns.tolist(),
-            "dtypes": {col: str(dtype) for col, dtype in session.data_session.df.dtypes.items()},
+            "columns": df.columns.tolist(),
+            "dtypes": {col: str(dtype) for col, dtype in df.dtypes.items()},
         },
     }
 
@@ -88,11 +91,14 @@ async def get_csv_schema(session_id: str) -> dict[str, Any]:
     if not session or not session.data_session.has_data():
         return {"error": "Session not found or no data loaded"}
 
+    df = session.data_session.df
+    assert df is not None  # Type guard since has_data() returned True
+    
     return {
         "session_id": session_id,
-        "columns": session.data_session.df.columns.tolist(),
-        "dtypes": {col: str(dtype) for col, dtype in session.data_session.df.dtypes.items()},
-        "shape": session.data_session.df.shape,
+        "columns": df.columns.tolist(),
+        "dtypes": {col: str(dtype) for col, dtype in df.dtypes.items()},
+        "shape": df.shape,
     }
 
 
@@ -141,7 +147,10 @@ async def get_csv_preview(session_id: str) -> dict[str, Any]:
     if not session or not session.data_session.has_data():
         return {"error": "Session not found or no data loaded"}
 
-    preview_data = create_data_preview_with_indices(session.data_session.df, 10)
+    df = session.data_session.df
+    assert df is not None  # Type guard since has_data() returned True
+    
+    preview_data = create_data_preview_with_indices(df, 10)
 
     return {
         "session_id": session_id,

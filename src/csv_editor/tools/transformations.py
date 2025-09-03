@@ -39,7 +39,9 @@ def _get_session_data(session_id: str) -> tuple[Any, pd.DataFrame]:
     if not session.data_session.has_data():
         raise NoDataLoadedError(session_id)
 
-    return session, session.data_session.df
+    df = session.data_session.df
+    assert df is not None  # Type guard since has_data() was checked
+    return session, df
 
 
 async def filter_rows(
@@ -72,8 +74,8 @@ async def filter_rows(
             operator = condition.get("operator")
             value = condition.get("value")
 
-            if column not in df.columns:
-                raise ColumnNotFoundError(column, df.columns.tolist())
+            if column is None or column not in df.columns:
+                raise ColumnNotFoundError(str(column or 'None'), df.columns.tolist())
 
             col_data = df[column]
 
@@ -1123,7 +1125,7 @@ async def extract_from_column(
         original_values_sample = df[column].head(5).tolist()
 
         # Perform extraction
-        session.data_session.df[column] = df[column].astype(str).str.extract(pattern, expand=expand)
+        session.data_session.df[column] = df[column].astype(str).str.extract(pattern, expand=False)
 
         updated_values_sample = session.data_session.df[column].head(5).tolist()
 
@@ -1798,7 +1800,8 @@ async def inspect_data_around(
             if column not in df.columns:
                 return {"success": False, "error": f"Column '{column}' not found"}
             column_name = column
-            col_index = df.columns.get_loc(column)
+            col_index_result = df.columns.get_loc(column)
+            col_index = col_index_result if isinstance(col_index_result, int) else 0
 
         # Calculate bounds
         row_start = max(0, row - radius)
@@ -1815,7 +1818,9 @@ async def inspect_data_around(
         # Convert to records with row indices
         records = []
         for _, (orig_idx, row_data) in enumerate(data_slice.iterrows()):
-            record = {"__row_index__": int(orig_idx)}
+            # Handle different index types from iterrows safely  
+            row_index_val = orig_idx if isinstance(orig_idx, int) else 0
+            record = {"__row_index__": row_index_val}
             record.update(row_data.to_dict())
 
             # Handle pandas/numpy types
@@ -1906,7 +1911,7 @@ async def find_cells_with_value(
             matching_rows = df.index[mask].tolist()
 
             for row_idx in matching_rows:
-                cell_value = df.iloc[row_idx][col]
+                cell_value = df.at[row_idx, col]
                 if pd.isna(cell_value):
                     cell_value = None
                 elif hasattr(cell_value, "item"):

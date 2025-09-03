@@ -17,7 +17,9 @@ def create_data_preview_with_indices(df: pd.DataFrame, num_rows: int = 5) -> dic
     # Create records with row indices
     preview_records = []
     for _, (row_idx, row) in enumerate(preview_df.iterrows()):
-        record = {"__row_index__": int(row_idx)}  # Include original row index
+        # Handle pandas index types safely
+        row_index_val = row_idx if isinstance(row_idx, int) else 0
+        record = {"__row_index__": row_index_val}  # Include original row index
         record.update(row.to_dict())
 
         # Handle pandas/numpy types for JSON serialization

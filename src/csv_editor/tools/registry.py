@@ -16,7 +16,7 @@ ToolFunction = Callable[..., Awaitable[dict[str, Any]]]
 class ToolRegistry:
     """Registry for MCP tools to reduce code duplication."""
 
-    def __init__(self):
+    def __init__(self) -> None:
         """Initialize the tool registry."""
         self.tools: dict[str, ToolFunction] = {}
         self.tool_categories: dict[str, list[str]] = {
@@ -29,7 +29,7 @@ class ToolRegistry:
             "row": [],
         }
 
-    def register_tool(self, category: str, name: str):
+    def register_tool(self, category: str, name: str) -> Callable[[ToolFunction], ToolFunction]:
         """Decorator to register a tool function."""
 
         def decorator(func: ToolFunction) -> ToolFunction:
@@ -75,7 +75,7 @@ def get_tool_registry() -> ToolRegistry:
     return _tool_registry
 
 
-def tool(category: str, name: str | None = None):
+def tool(category: str, name: str | None = None) -> Callable[[ToolFunction], ToolFunction]:
     """Decorator to register a tool with the registry."""
 
     def decorator(func: ToolFunction) -> ToolFunction:
@@ -90,7 +90,7 @@ def with_session_validation(func: ToolFunction) -> ToolFunction:
     """Decorator to add common session validation to tool functions."""
 
     @functools.wraps(func)
-    async def wrapper(*args, **kwargs) -> dict[str, Any]:
+    async def wrapper(*args: Any, **kwargs: Any) -> dict[str, Any]:
         # Extract session_id from args/kwargs
         session_id = None
         if args:
@@ -126,7 +126,7 @@ def with_error_handling(func: ToolFunction) -> ToolFunction:
     """Decorator to add standardized error handling to tool functions."""
 
     @functools.wraps(func)
-    async def wrapper(*args, **kwargs) -> dict[str, Any]:
+    async def wrapper(*args: Any, **kwargs: Any) -> dict[str, Any]:
         try:
             return await func(*args, **kwargs)
         except Exception as e:

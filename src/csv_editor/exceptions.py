@@ -2,6 +2,8 @@
 
 from __future__ import annotations
 
+from typing import Any
+
 
 class CSVEditorError(Exception):
     """Base exception for CSV Editor operations."""
@@ -179,7 +181,7 @@ class ParameterError(CSVEditorError):
 class InvalidParameterError(ParameterError):
     """Invalid parameter value."""
 
-    def __init__(self, parameter: str, value: any, expected: str | None = None):
+    def __init__(self, parameter: str, value: Any, expected: str | None = None):
         """Initialize with parameter details."""
         super().__init__(
             f"Invalid value for parameter '{parameter}': {value}",

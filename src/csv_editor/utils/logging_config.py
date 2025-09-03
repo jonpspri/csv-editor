@@ -7,6 +7,7 @@ import logging
 import uuid
 from contextvars import ContextVar
 from datetime import datetime, timezone
+from typing import Any
 
 # Context variable for correlation ID tracking
 correlation_id: ContextVar[str] = ContextVar("correlation_id", default="")
@@ -101,28 +102,28 @@ class CorrelatedLogger:
         """Initialize correlated logger."""
         self.logger = logging.getLogger(name)
 
-    def _log_with_context(self, level: int, msg: str, **kwargs) -> None:
+    def _log_with_context(self, level: int, msg: str, **kwargs: Any) -> None:
         """Log message with additional context."""
         extra = {"correlation_id": get_correlation_id(), **kwargs}
         self.logger.log(level, msg, extra=extra)
 
-    def debug(self, msg: str, **kwargs) -> None:
+    def debug(self, msg: str, **kwargs: Any) -> None:
         """Log debug message with context."""
         self._log_with_context(logging.DEBUG, msg, **kwargs)
 
-    def info(self, msg: str, **kwargs) -> None:
+    def info(self, msg: str, **kwargs: Any) -> None:
         """Log info message with context."""
         self._log_with_context(logging.INFO, msg, **kwargs)
 
-    def warning(self, msg: str, **kwargs) -> None:
+    def warning(self, msg: str, **kwargs: Any) -> None:
         """Log warning message with context."""
         self._log_with_context(logging.WARNING, msg, **kwargs)
 
-    def error(self, msg: str, **kwargs) -> None:
+    def error(self, msg: str, **kwargs: Any) -> None:
         """Log error message with context."""
         self._log_with_context(logging.ERROR, msg, **kwargs)
 
-    def critical(self, msg: str, **kwargs) -> None:
+    def critical(self, msg: str, **kwargs: Any) -> None:
         """Log critical message with context."""
         self._log_with_context(logging.CRITICAL, msg, **kwargs)
 
@@ -132,7 +133,7 @@ def get_logger(name: str) -> CorrelatedLogger:
     return CorrelatedLogger(name)
 
 
-def log_operation_start(operation: str, session_id: str | None = None, **context) -> None:
+def log_operation_start(operation: str, session_id: str | None = None, **context: Any) -> None:
     """Log the start of an operation."""
     logger = get_logger("csv_editor.operations")
     logger.info(
@@ -145,7 +146,7 @@ def log_operation_start(operation: str, session_id: str | None = None, **context
 
 
 def log_operation_end(
-    operation: str, session_id: str | None = None, success: bool = True, **context
+    operation: str, session_id: str | None = None, success: bool = True, **context: Any
 ) -> None:
     """Log the end of an operation."""
     logger = get_logger("csv_editor.operations")
@@ -160,7 +161,7 @@ def log_operation_end(
     )
 
 
-def log_session_event(event: str, session_id: str, **context) -> None:
+def log_session_event(event: str, session_id: str, **context: Any) -> None:
     """Log a session-related event."""
     logger = get_logger("csv_editor.sessions")
     logger.info(f"Session event: {event}", session_id=session_id, event_type=event, **context)
