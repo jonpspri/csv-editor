@@ -172,7 +172,6 @@ def register_tools_from_module(module: Any, category: str) -> None:
             and not attr_name.startswith("_")
             and any(attr_name.startswith(prefix) for prefix in tool_prefixes)
         ):
-
             # Register the tool
             registry.register_tool(category, attr_name)(attr)
             logger.info(f"Auto-registered tool '{attr_name}' in category '{category}'")

@@ -7,14 +7,14 @@ CSV Editor is a Model Context Protocol (MCP) server that provides AI assistants 
 
 ### Package Management
 - Use `uv` for all Python operations (not pip or poetry)
-- Run tests with `uv run test` or `uv run pytest`
+- Run tests with `uv run -m pytest`
 - Use `uv run python` instead of direct `python` commands
 - Install dependencies with `uv add <package>` or `uv add --dev <package>`
 
 ### Code Quality Standards
 - Run `uv run all-checks` before committing (includes lint, format, type-check, test)
 - Use `uv run ruff check` for linting
-- Use `uv run black .` for formatting  
+- Use `uv run ruff format` for formatting
 - Use `uv run mypy src/` for type checking
 - Maintain test coverage above 80%
 
@@ -57,7 +57,7 @@ uv run csv-editor      # Run the MCP server
 uv run test            # Run test suite
 uv run all-checks      # Full quality check pipeline
 
-# Version management  
+# Version management
 uv run sync-versions   # Sync version numbers across files
 
 # Documentation

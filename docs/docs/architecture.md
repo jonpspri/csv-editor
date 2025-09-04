@@ -13,7 +13,7 @@ CSV Editor is built as a Model Context Protocol (MCP) server that provides AI as
 - **Data Processing**: Pandas 2.2.3+, NumPy 2.1.3+
 - **Package Manager**: uv (ultra-fast Python package management)
 - **Build System**: Hatchling
-- **Code Quality**: Ruff (linting), Black (formatting), MyPy (type checking)
+- **Code Quality**: Ruff (linting and formatting), MyPy (type checking)
 - **Configuration**: Pydantic Settings for environment management
 
 ## Core Components
@@ -114,7 +114,7 @@ uv run all-checks    # Lint, format, type-check, test
 
 ### Quality Assurance
 - **Linting**: Ruff with comprehensive rule set
-- **Formatting**: Black with 100-character lines
+- **Formatting**: Ruff with 100-character lines
 - **Type checking**: MyPy with strict configuration
 - **Testing**: pytest with asyncio support and coverage reporting
 

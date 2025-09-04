@@ -5,7 +5,7 @@ import pandas as pd
 
 from src.csv_editor.tools.analytics import (
     detect_outliers,
-    get_column_statistics, 
+    get_column_statistics,
     get_correlation_matrix,
     get_statistics,
     get_value_counts,
@@ -48,7 +48,7 @@ class TestAnalyticsErrorHandling:
         assert "not found" in result["error"]
 
     async def test_get_column_statistics_invalid_session(self):
-        """Test column statistics with invalid session.""" 
+        """Test column statistics with invalid session."""
         result = await get_column_statistics("invalid-session", "price")
         assert result["success"] is False
         assert "error" in result
@@ -85,8 +85,7 @@ class TestAnalyticsAdvancedFeatures:
     async def test_get_correlation_matrix_success(self, analytics_test_session):
         """Test correlation matrix calculation."""
         result = await get_correlation_matrix(
-            analytics_test_session, 
-            columns=["price", "quantity", "rating"]
+            analytics_test_session, columns=["price", "quantity", "rating"]
         )
         assert result["success"] is True
         assert "correlation_matrix" in result
@@ -103,7 +102,7 @@ class TestAnalyticsAdvancedFeatures:
         result = await group_by_aggregate(
             analytics_test_session,
             group_by=["category"],
-            aggregations={"price": ["mean", "max"], "quantity": ["sum"]}
+            aggregations={"price": ["mean", "max"], "quantity": ["sum"]},
         )
         assert result["success"] is True
         assert "grouped_data" in result
@@ -113,9 +112,7 @@ class TestAnalyticsAdvancedFeatures:
     async def test_group_by_aggregate_invalid_columns(self, analytics_test_session):
         """Test group by with invalid columns."""
         result = await group_by_aggregate(
-            analytics_test_session,
-            group_by=["nonexistent"],
-            aggregations={"price": ["mean"]}
+            analytics_test_session, group_by=["nonexistent"], aggregations={"price": ["mean"]}
         )
         assert result["success"] is False
         assert "not found" in result["error"]

@@ -5,7 +5,7 @@ import pandas as pd
 
 from src.csv_editor.tools.transformations import (
     add_column,
-    change_column_type, 
+    change_column_type,
     delete_row,
     extract_from_column,
     fill_column_nulls,
@@ -52,8 +52,7 @@ class TestTransformationErrorHandling:
     async def test_filter_rows_invalid_operator(self, transform_test_session):
         """Test filtering with invalid operator."""
         result = await filter_rows(
-            transform_test_session, 
-            [{"column": "age", "operator": "invalid_op", "value": 25}]
+            transform_test_session, [{"column": "age", "operator": "invalid_op", "value": 25}]
         )
         assert result["success"] is False
         assert "operator" in result["error"]["message"]
@@ -61,8 +60,7 @@ class TestTransformationErrorHandling:
     async def test_filter_rows_missing_column(self, transform_test_session):
         """Test filtering with missing column."""
         result = await filter_rows(
-            transform_test_session,
-            [{"column": "nonexistent", "operator": "==", "value": "test"}]
+            transform_test_session, [{"column": "nonexistent", "operator": "==", "value": "test"}]
         )
         assert result["success"] is False
         assert "not found" in result["error"]["message"]
@@ -81,7 +79,9 @@ class TestTransformationErrorHandling:
 
     async def test_add_column_list_length_mismatch(self, transform_test_session):
         """Test adding column with mismatched list length."""
-        result = await add_column(transform_test_session, "new_col", value=[1, 2])  # Only 2 values for 4 rows
+        result = await add_column(
+            transform_test_session, "new_col", value=[1, 2]
+        )  # Only 2 values for 4 rows
         assert result["success"] is False
         assert "doesn't match row count" in result["error"]
 
@@ -114,14 +114,14 @@ class TestCellAndRowOperations:
         result = await get_cell_value(transform_test_session, 100, "name")
         assert result["success"] is False
         assert "out of range" in result["error"]
-        
+
         # Test column out of bounds with index
         result = await get_cell_value(transform_test_session, 0, 100)
         assert result["success"] is False
         assert "out of range" in result["error"]
 
     async def test_set_cell_value_out_of_bounds(self, transform_test_session):
-        """Test setting cell value with out of bounds indices.""" 
+        """Test setting cell value with out of bounds indices."""
         result = await set_cell_value(transform_test_session, 100, "name", "New Value")
         assert result["success"] is False
         assert "out of range" in result["error"]
@@ -175,7 +175,7 @@ class TestCellAndRowOperations:
         assert "not found" in result["error"]
 
 
-@pytest.mark.asyncio 
+@pytest.mark.asyncio
 class TestColumnOperations:
     """Test column operation edge cases."""
 
@@ -191,7 +191,7 @@ class TestColumnOperations:
         result = await get_column_data(transform_test_session, "name", start_row=100)
         assert result["success"] is False
         assert "out of range" in result["error"]
-        
+
         # Test invalid end row
         result = await get_column_data(transform_test_session, "name", start_row=0, end_row=100)
         assert result["success"] is False
@@ -199,7 +199,9 @@ class TestColumnOperations:
 
     async def test_replace_in_column_missing_column(self, transform_test_session):
         """Test replacing in missing column."""
-        result = await replace_in_column(transform_test_session, "nonexistent", "pattern", "replacement")
+        result = await replace_in_column(
+            transform_test_session, "nonexistent", "pattern", "replacement"
+        )
         assert result["success"] is False
         assert "not found" in result["error"]
 
@@ -224,7 +226,7 @@ class TestColumnOperations:
     async def test_fill_column_nulls_missing_column(self, transform_test_session):
         """Test filling nulls in missing column."""
         result = await fill_column_nulls(transform_test_session, "nonexistent", "value")
-        assert result["success"] is False 
+        assert result["success"] is False
         assert "not found" in result["error"]
 
 
@@ -241,7 +243,9 @@ class TestDataSummaryAndInspection:
 
     async def test_get_data_summary_custom_preview_size(self, transform_test_session):
         """Test data summary with custom preview size."""
-        result = await get_data_summary(transform_test_session, include_preview=True, max_preview_rows=2)
+        result = await get_data_summary(
+            transform_test_session, include_preview=True, max_preview_rows=2
+        )
         assert result["success"] is True
         assert "preview" in result
         assert result["preview"]["preview_rows"] <= 2
@@ -254,7 +258,7 @@ class TestAdvancedTransformations:
     async def test_fill_missing_values_different_strategies(self, transform_test_session):
         """Test different missing value fill strategies."""
         strategies = ["drop", "forward", "backward", "mean", "median", "mode"]
-        
+
         for strategy in strategies:
             result = await fill_missing_values(transform_test_session, strategy=strategy)
             # Some strategies might fail depending on data types, but should handle gracefully
@@ -269,8 +273,10 @@ class TestAdvancedTransformations:
     async def test_remove_duplicates_different_options(self, transform_test_session):
         """Test duplicate removal with different options."""
         # First add some duplicate data
-        await insert_row(transform_test_session, -1, {"name": "John Doe", "age": 30, "email": "john@example.com"})
-        
+        await insert_row(
+            transform_test_session, -1, {"name": "John Doe", "age": 30, "email": "john@example.com"}
+        )
+
         # Test different keep options
         for keep_option in ["first", "last", "none"]:
             result = await remove_duplicates(transform_test_session, keep=keep_option)

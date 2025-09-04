@@ -18,7 +18,9 @@ logger = logging.getLogger(__name__)
 
 
 async def validate_schema(
-    session_id: str, schema: dict[str, dict[str, Any]], ctx: Context | None = None  # noqa: ARG001
+    session_id: str,
+    schema: dict[str, dict[str, Any]],
+    ctx: Context | None = None,  # noqa: ARG001
 ) -> dict[str, Any]:
     """
     Validate data against a schema definition.
@@ -331,7 +333,7 @@ async def check_data_quality(
                                 {
                                     "type": "incomplete_data",
                                     "column": col,
-                                    "message": f"Column '{col}' is only {round(completeness*100, 2)}% complete",
+                                    "message": f"Column '{col}' is only {round(completeness * 100, 2)}% complete",
                                     "severity": "high" if completeness < 0.5 else "medium",
                                 }
                             )
@@ -364,7 +366,7 @@ async def check_data_quality(
                     quality_results["issues"].append(
                         {
                             "type": "duplicate_rows",
-                            "message": f"Found {duplicates.sum()} duplicate rows ({round(duplicate_ratio*100, 2)}%)",
+                            "message": f"Found {duplicates.sum()} duplicate rows ({round(duplicate_ratio * 100, 2)}%)",
                             "severity": "high" if duplicate_ratio > 0.1 else "medium",
                         }
                     )
@@ -486,7 +488,7 @@ async def check_data_quality(
                             {
                                 "type": "outliers",
                                 "column": col,
-                                "message": f"Column '{col}' has {outliers} outliers ({round(outlier_ratio*100, 2)}%)",
+                                "message": f"Column '{col}' has {outliers} outliers ({round(outlier_ratio * 100, 2)}%)",
                                 "severity": "medium",
                             }
                         )

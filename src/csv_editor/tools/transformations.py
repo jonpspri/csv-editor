@@ -152,7 +152,9 @@ async def filter_rows(
 
 
 async def sort_data(
-    session_id: str, columns: list[str | dict[str, str]], ctx: Context | None = None  # noqa: ARG001
+    session_id: str,
+    columns: list[str | dict[str, str]],
+    ctx: Context | None = None,  # noqa: ARG001
 ) -> dict[str, Any]:
     """
     Sort data by one or more columns.
@@ -205,7 +207,9 @@ async def sort_data(
 
 
 async def select_columns(
-    session_id: str, columns: list[str], ctx: Context | None = None  # noqa: ARG001
+    session_id: str,
+    columns: list[str],
+    ctx: Context | None = None,  # noqa: ARG001
 ) -> dict[str, Any]:
     """
     Select specific columns from the dataframe.
@@ -247,7 +251,9 @@ async def select_columns(
 
 
 async def rename_columns(
-    session_id: str, mapping: dict[str, str], ctx: Context | None = None  # noqa: ARG001
+    session_id: str,
+    mapping: dict[str, str],
+    ctx: Context | None = None,  # noqa: ARG001
 ) -> dict[str, Any]:
     """
     Rename columns in the dataframe.
@@ -348,7 +354,9 @@ async def add_column(
 
 
 async def remove_columns(
-    session_id: str, columns: list[str], ctx: Context | None = None  # noqa: ARG001
+    session_id: str,
+    columns: list[str],
+    ctx: Context | None = None,  # noqa: ARG001
 ) -> dict[str, Any]:
     """
     Remove columns from the dataframe.
@@ -746,7 +754,7 @@ async def get_cell_value(
         if row_index < 0 or row_index >= len(df):
             return {
                 "success": False,
-                "error": f"Row index {row_index} out of range (0-{len(df)-1})",
+                "error": f"Row index {row_index} out of range (0-{len(df) - 1})",
             }
 
         # Handle column specification
@@ -755,7 +763,7 @@ async def get_cell_value(
             if column < 0 or column >= len(df.columns):
                 return {
                     "success": False,
-                    "error": f"Column index {column} out of range (0-{len(df.columns)-1})",
+                    "error": f"Column index {column} out of range (0-{len(df.columns) - 1})",
                 }
             column_name = df.columns[column]
         else:
@@ -818,7 +826,7 @@ async def set_cell_value(
         if row_index < 0 or row_index >= len(df):
             return {
                 "success": False,
-                "error": f"Row index {row_index} out of range (0-{len(df)-1})",
+                "error": f"Row index {row_index} out of range (0-{len(df) - 1})",
             }
 
         # Handle column specification
@@ -827,7 +835,7 @@ async def set_cell_value(
             if column < 0 or column >= len(df.columns):
                 return {
                     "success": False,
-                    "error": f"Column index {column} out of range (0-{len(df.columns)-1})",
+                    "error": f"Column index {column} out of range (0-{len(df.columns) - 1})",
                 }
             column_name = df.columns[column]
         else:
@@ -904,7 +912,7 @@ async def get_row_data(
         if row_index < 0 or row_index >= len(df):
             return {
                 "success": False,
-                "error": f"Row index {row_index} out of range (0-{len(df)-1})",
+                "error": f"Row index {row_index} out of range (0-{len(df) - 1})",
             }
 
         # Get row data
@@ -981,7 +989,7 @@ async def get_column_data(
         if start_row < 0 or start_row >= total_rows:
             return {
                 "success": False,
-                "error": f"Start row {start_row} out of range (0-{total_rows-1})",
+                "error": f"Start row {start_row} out of range (0-{total_rows - 1})",
             }
 
         if end_row < start_row or end_row > total_rows:
@@ -1601,7 +1609,7 @@ async def delete_row(
         if row_index < 0 or row_index >= len(df):
             return {
                 "success": False,
-                "error": f"Row index {row_index} out of range (0-{len(df)-1})",
+                "error": f"Row index {row_index} out of range (0-{len(df) - 1})",
             }
 
         # Get the data that will be deleted for tracking
@@ -1687,7 +1695,7 @@ async def update_row(
         if row_index < 0 or row_index >= len(df):
             return {
                 "success": False,
-                "error": f"Row index {row_index} out of range (0-{len(df)-1})",
+                "error": f"Row index {row_index} out of range (0-{len(df) - 1})",
             }
 
         # Ensure data is a dict at this point
@@ -1792,7 +1800,7 @@ async def inspect_data_around(
             if column < 0 or column >= len(df.columns):
                 return {
                     "success": False,
-                    "error": f"Column index {column} out of range (0-{len(df.columns)-1})",
+                    "error": f"Column index {column} out of range (0-{len(df.columns) - 1})",
                 }
             column_name = df.columns[column]
             col_index = column
@@ -1972,7 +1980,7 @@ async def get_data_summary(
             "success": True,
             "session_id": session_id,
             "coordinate_system": {
-                "row_indexing": f"0 to {len(df)-1} (0-based)",
+                "row_indexing": f"0 to {len(df) - 1} (0-based)",
                 "column_indexing": "Use column names or 0-based indices",
                 "total_cells": len(df) * len(df.columns),
             },

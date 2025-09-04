@@ -100,7 +100,9 @@ async def get_statistics(
 
 
 async def get_column_statistics(
-    session_id: str, column: str, ctx: Context | None = None  # noqa: ARG001
+    session_id: str,
+    column: str,
+    ctx: Context | None = None,  # noqa: ARG001
 ) -> dict[str, Any]:
     """
     Get detailed statistics for a specific column.

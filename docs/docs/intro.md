@@ -71,7 +71,7 @@ Built with modern, high-performance tools:
 - **Framework**: FastMCP 2.11.3+ (Model Context Protocol)
 - **Data Processing**: Pandas 2.2.3+, NumPy 2.1.3+
 - **Package Manager**: uv (ultra-fast Python package management)
-- **Code Quality**: Ruff (linting), Black (formatting), MyPy (type checking)
+- **Code Quality**: Ruff (linting and formatting), MyPy (type checking)
 - **Configuration**: Pydantic Settings for environment management
 
 ## Getting Started
