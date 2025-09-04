@@ -350,14 +350,33 @@ uv run all-checks     # Format, lint, type-check, test
 
 ```
 csv-editor/
-├── src/csv_editor/   # Core implementation
-│   ├── tools/        # MCP tool implementations
-│   ├── models/       # Data models
-│   └── server.py     # MCP server
-├── tests/            # Test suite
-├── examples/         # Usage examples
-└── docs/            # Documentation
+├── src/csv_editor/           # Core implementation
+│   ├── server.py            # FastMCP server entry point
+│   ├── models/              # Data models and session management
+│   │   ├── csv_session.py      # Session management & settings
+│   │   ├── data_models.py      # Core data types
+│   │   └── data_session.py     # Data operations
+│   ├── tools/               # MCP tool implementations
+│   │   ├── data_io.py          # Load/export operations
+│   │   ├── data_manipulation.py # Transform operations
+│   │   ├── data_analysis.py     # Statistics & analysis
+│   │   └── data_validation.py   # Schema validation
+│   ├── exceptions.py        # Custom error handling
+│   └── _version.py          # Dynamic version loading
+├── tests/                   # Comprehensive test suite
+├── examples/                # Usage examples and demos
+├── scripts/                 # Maintenance utilities
+└── docs/                    # Docusaurus documentation site
 ```
+
+### Architecture Principles
+
+1. **Type Safety**: Full type annotations with Pydantic validation
+2. **Modularity**: Clear separation of concerns across modules  
+3. **Performance**: Streaming operations for large datasets
+4. **Reliability**: Comprehensive error handling and logging
+5. **Usability**: Simple installation and configuration
+6. **Maintainability**: Modern tooling and clear documentation
 
 ## 🤝 Contributing
 
@@ -388,7 +407,7 @@ We welcome contributions! See [CONTRIBUTING.md](CONTRIBUTING.md) for guidelines.
 
 ## 📄 License
 
-MIT License - see [LICENSE](LICENSE) file
+Apache 2.0 License - see [LICENSE](LICENSE) file
 
 ## 🙏 Acknowledgments
 

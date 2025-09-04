@@ -1,110 +1,80 @@
-# CSV Editor Architecture
+# Claude Code Instructions for CSV Editor Development
 
-## Overview
+## Project Context
+CSV Editor is a Model Context Protocol (MCP) server that provides AI assistants with 40+ tools for CSV data manipulation. Built with FastMCP, Pandas, and modern Python tooling.
 
-CSV Editor is a Model Context Protocol (MCP) server that provides AI assistants with comprehensive CSV data manipulation capabilities. Built with FastMCP, it offers 40+ tools for data operations, analysis, and validation.
-
-## Core Architecture
-
-### Technology Stack
-
-- **Framework**: FastMCP 2.11.3+
-- **Data Processing**: Pandas 2.2.3+, NumPy 2.1.3+
-- **Package Manager**: uv (ultra-fast Python package management)
-- **Build System**: Hatchling
-- **Code Quality**: Ruff (linting), Black (formatting), MyPy (type checking)
-- **Configuration**: Pydantic Settings for environment management
-
-### Key Components
-
-```
-src/csv_editor/
-├── server.py           # FastMCP server entry point
-├── models/            # Data models and session management
-│   ├── csv_session.py    # Session management & settings
-│   ├── data_models.py    # Core data types
-│   └── data_session.py   # Data operations
-├── tools/             # MCP tool implementations
-│   ├── data_io.py       # Load/export operations
-│   ├── data_manipulation.py  # Transform operations
-│   ├── data_analysis.py     # Statistics & analysis
-│   └── data_validation.py   # Schema validation
-└── exceptions.py      # Custom error handling
-```
-
-## Key Features
-
-### Session Management
-- **Multi-session support** with automatic cleanup
-- **Configurable timeouts** and resource limits
-- **Session isolation** for concurrent users
-
-### Data Operations
-- **40+ tools** covering I/O, manipulation, analysis, and validation
-- **Multiple format support**: CSV, JSON, Excel, Parquet, HTML, Markdown
-- **Streaming processing** for large files
-- **Type-safe operations** with Pydantic validation
-
-### Auto-Save & History
-- **Automatic saving** after each operation
-- **Undo/redo functionality** with operation tracking
-- **Persistent history** with JSON storage
-- **Configurable strategies**: overwrite, backup, versioned
-
-### Configuration
-- **Environment-based settings** using Pydantic Settings
-- **Centralized configuration** in CSVSettings class
-- **Runtime version detection** via importlib.metadata
-
-## Environment Variables
-
-All configuration uses the `CSV_EDITOR_` prefix:
-
-| Variable | Default | Purpose |
-|----------|---------|---------|
-| `CSV_EDITOR_MAX_FILE_SIZE_MB` | 1024 | Maximum file size |
-| `CSV_EDITOR_CSV_HISTORY_DIR` | "." | History storage location |
-| `CSV_EDITOR_SESSION_TIMEOUT` | 3600 | Session timeout (seconds) |
-| `CSV_EDITOR_CHUNK_SIZE` | 10000 | Processing chunk size |
-| `CSV_EDITOR_AUTO_SAVE` | true | Enable auto-save |
-
-## Development Workflow
+## Development Guidelines
 
 ### Package Management
-```bash
-uv sync              # Install dependencies
-uv run csv-editor    # Run server
-uv run test          # Run tests
-uv run all-checks    # Lint, format, type-check, test
-```
+- Use `uv` for all Python operations (not pip or poetry)
+- Run tests with `uv run test` or `uv run pytest`
+- Use `uv run python` instead of direct `python` commands
+- Install dependencies with `uv add <package>` or `uv add --dev <package>`
+
+### Code Quality Standards
+- Run `uv run all-checks` before committing (includes lint, format, type-check, test)
+- Use `uv run ruff check` for linting
+- Use `uv run black .` for formatting  
+- Use `uv run mypy src/` for type checking
+- Maintain test coverage above 80%
+
+### Testing Approach
+- Write comprehensive tests for all new MCP tools
+- Use pytest fixtures for session management
+- Test both success and error cases
+- Include integration tests for tool workflows
+- Run `uv run test-cov` to check coverage
 
 ### Version Management
-- **Single source of truth**: pyproject.toml
-- **Automatic synchronization**: `uv run sync-versions`
-- **Dynamic loading**: via importlib.metadata
+- Primary version source: `pyproject.toml`
+- Sync versions with `uv run sync-versions` after version changes
+- Code uses dynamic version loading via `importlib.metadata`
 
-## MCP Integration
+### MCP Tool Development
+- Place new tools in appropriate `tools/` modules
+- Follow existing patterns for error handling and response structure
+- Include comprehensive docstrings with examples
+- Use type hints for all parameters and return values
+- Handle null values correctly (JSON null → Python None → pandas NaN)
 
-The server implements the Model Context Protocol standard:
+### Environment Configuration
+- All environment variables use `CSV_EDITOR_` prefix
+- Configuration centralized in `CSVSettings` class in `csv_session.py`
+- Default values defined in the Settings class, not scattered `os.getenv()` calls
 
-- **Tools**: 40+ data manipulation functions
-- **Resources**: Session and data access
-- **Prompts**: Data analysis templates
-- **Error Handling**: Structured error responses
+### Architecture Notes
+- Session-based design with automatic cleanup
+- Auto-save functionality enabled by default
+- Persistent history with undo/redo capabilities
+- Type-safe operations using Pydantic validation
+- Modular tool organization for maintainability
 
-## Design Principles
+## Common Commands
+```bash
+# Setup and development
+uv sync                 # Install all dependencies
+uv run csv-editor      # Run the MCP server
+uv run test            # Run test suite
+uv run all-checks      # Full quality check pipeline
 
-1. **Type Safety**: Full type annotations with Pydantic validation
-2. **Modularity**: Clear separation of concerns across modules  
-3. **Performance**: Streaming operations for large datasets
-4. **Reliability**: Comprehensive error handling and logging
-5. **Usability**: Simple installation and configuration
-6. **Maintainability**: Modern tooling and clear documentation
+# Version management  
+uv run sync-versions   # Sync version numbers across files
 
-## Future Considerations
+# Documentation
+cd docs && npm run build  # Build Docusaurus site
+cd docs && npm run serve  # Serve docs locally
+```
 
-- SQL query interface for advanced operations
-- Real-time collaboration features
-- Machine learning integrations
-- Cloud storage support
-- Advanced visualization tools- Use uv to run python3 and pytest
+## File Structure Context
+- `src/csv_editor/` - Main package code
+- `tests/` - Test suite mirroring source structure
+- `examples/` - Usage examples and demos
+- `docs/` - Docusaurus documentation site
+- `scripts/` - Maintenance and utility scripts
+
+## Key Implementation Details
+- FastMCP framework for MCP protocol
+- Pydantic models for data validation
+- Pandas for data operations
+- Session management with configurable timeouts
+- Comprehensive error handling and logging

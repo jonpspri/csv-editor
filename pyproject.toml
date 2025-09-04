@@ -8,7 +8,7 @@ version = "1.0.2"
 description = "MCP server for comprehensive CSV file operations with pandas-based tools"
 readme = "README.md"
 requires-python = ">=3.10"
-license = {text = "MIT"}
+license = {text = "Apache-2.0"}
 authors = [
     {name = "Santosh Ray", email = "rayskumar02@gmail.com"},
     {name = "Jonathan Springer", email = "jps@s390x.com"},
@@ -35,7 +35,7 @@ classifiers = [
     "Intended Audience :: Developers",
     "Intended Audience :: Science/Research",
     "Intended Audience :: Financial and Insurance Industry",
-    "License :: OSI Approved :: MIT License",
+    "License :: OSI Approved :: Apache Software License",
     "Operating System :: OS Independent",
     "Programming Language :: Python",
     "Programming Language :: Python :: 3",
@@ -132,6 +132,7 @@ include = [
     "/examples",
     "README.md",
     "LICENSE",
+    "NOTICE",
     "CHANGELOG.md",
     "pyproject.toml",
     "uv.toml",
