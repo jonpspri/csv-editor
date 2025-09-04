@@ -81,6 +81,7 @@ Ready to supercharge your AI's data capabilities?
 1. **[Install CSV Editor](./installation)** - Set up in 2 minutes
 2. **[Quick Start Tutorial](./tutorials/quickstart)** - Your first data processing
 3. **[API Reference](./api/overview)** - Complete tool documentation
+4. **[Architecture](./architecture)** - Technical design and implementation details
 
 ## Community & Support
 
