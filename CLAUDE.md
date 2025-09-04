@@ -37,6 +37,13 @@ CSV Editor is a Model Context Protocol (MCP) server that provides AI assistants 
 - Use type hints for all parameters and return values
 - Handle null values correctly (JSON null → Python None → pandas NaN)
 
+### Type Checking Guidelines
+- Avoid using `Any` when a more specific type can be declared
+- Be especially sparing in using `Any` as a function return type or dict datatype
+- Prefer specific types like `dict[str, str]` over `dict[str, Any]`
+- Use union types when multiple specific types are acceptable
+- Consider using TypedDict for structured dictionary returns
+
 ### Environment Configuration
 - All environment variables use `CSV_EDITOR_` prefix
 - Configuration centralized in `CSVSettings` class in `csv_session.py`

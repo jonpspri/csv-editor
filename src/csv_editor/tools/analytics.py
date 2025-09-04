@@ -54,7 +54,17 @@ async def get_statistics(
             numeric_df = df.select_dtypes(include=[np.number])
 
         if numeric_df.empty:
-            return {"success": False, "error": "No numeric columns found"}
+            # Return basic statistics for empty numeric data
+            return {
+                "success": True,
+                "statistics": {
+                    "row_count": len(df),
+                    "column_count": len(df.columns),
+                    "numeric_columns": [],
+                    "non_numeric_columns": list(df.columns),
+                },
+                "session_id": session_id,
+            }
 
         # Calculate statistics
         stats = {}

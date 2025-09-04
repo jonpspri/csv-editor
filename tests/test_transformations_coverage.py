@@ -152,7 +152,7 @@ class TestCellAndRowOperations:
 
     async def test_insert_row_wrong_data_type(self, transform_test_session):
         """Test inserting row with wrong data type."""
-        result = await insert_row(transform_test_session, 0, "not_dict_or_list_or_json")
+        result = await insert_row(transform_test_session, 0, 123)  # Integer instead of dict/list/string
         assert result["success"] is False
         assert "must be a dict or list" in result["error"]
 

@@ -97,11 +97,13 @@ class TestServerSessionHandling:
 class TestServerConfiguration:
     """Test server configuration and setup."""
 
-    def test_server_tool_registration(self):
+    async def test_server_tool_registration(self):
         """Test that tools are properly registered."""
         # Test that server has tools registered
-        assert hasattr(mcp, "_tools")
+        assert hasattr(mcp, "_tool_manager")
         # Tools should be registered (exact count may vary)
+        tools = await mcp.get_tools()
+        assert len(tools) > 0
 
     def test_instructions_content_structure(self):
         """Test instruction content has expected structure."""
@@ -113,9 +115,9 @@ class TestServerConfiguration:
     def test_server_prompts_exist(self):
         """Test that server has prompt templates."""
         # Test basic server structure has prompts
-        assert hasattr(mcp, "_prompts")
+        assert hasattr(mcp, "_prompt_manager")
 
     def test_server_resources_exist(self):
         """Test that server has resource endpoints."""
         # Test basic server structure has resources
-        assert hasattr(mcp, "_resources")
+        assert hasattr(mcp, "_resource_manager")
